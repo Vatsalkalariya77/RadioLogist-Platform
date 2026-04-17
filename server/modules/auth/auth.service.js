@@ -74,11 +74,11 @@ exports.loginUser = async (payload = {}) => {
   const { secret, options } = getJwtConfig();
 
   const token = jwt.sign(
-    { id: user._id, role: user.role },
+    { sub: user._id, role: user.role },
     secret,
     {
       ...options,
-      subject: user._id.toString(),
+      
     }
   );
 
