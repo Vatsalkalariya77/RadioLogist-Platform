@@ -3,6 +3,7 @@ const cors = require("cors");
 const authRoutes = require("./modules/auth/auth.routes");
 const userRoutes = require("./modules/user/user.routes");
 const caseRoutes = require("./modules/case/case.routes");
+const submissionRoutes = require("./modules/submission/submission.routes");
 const {
   notFound,
   errorHandler,
@@ -37,6 +38,7 @@ app.use(express.json({ limit: "10kb" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/cases", caseRoutes);
+app.use("/api/submissions", submissionRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
