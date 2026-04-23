@@ -51,6 +51,11 @@ const serializeCase = (caseDoc) => ({
   description: caseDoc.description,
   difficulty: caseDoc.difficulty,
   tags: caseDoc.tags,
+
+  dicomFiles: caseDoc.dicomFiles,
+  modality: caseDoc.modality,
+  isPublished: caseDoc.isPublished,
+
   createdBy: caseDoc.createdBy?._id
     ? {
         id: caseDoc.createdBy._id.toString(),
@@ -59,6 +64,7 @@ const serializeCase = (caseDoc) => ({
         role: caseDoc.createdBy.role,
       }
     : caseDoc.createdBy.toString(),
+
   createdAt: caseDoc.createdAt,
   updatedAt: caseDoc.updatedAt,
 });
@@ -66,7 +72,15 @@ const serializeCase = (caseDoc) => ({
 const buildCreatePayload = (payload = {}, userId) => {
   assertPayloadObject(payload);
 
-  const allowedKeys = ["title", "description", "difficulty", "tags"];
+  const allowedKeys = [
+    "title",
+    "description",
+    "difficulty",
+    "tags",
+    "modality",
+    "dicomFiles",
+    "isPublished",
+  ];
   const payloadKeys = Object.keys(payload);
   const invalidKeys = payloadKeys.filter((key) => !allowedKeys.includes(key));
 
@@ -93,6 +107,9 @@ const buildCreatePayload = (payload = {}, userId) => {
     description,
     difficulty,
     tags,
+    modality: payload.modality,
+    dicomFiles: payload.dicomFiles || [],
+    isPublished: payload.isPublished ?? false,
     createdBy: userId,
   };
 };
@@ -100,7 +117,15 @@ const buildCreatePayload = (payload = {}, userId) => {
 const buildUpdatePayload = (payload = {}) => {
   assertPayloadObject(payload);
 
-  const allowedKeys = ["title", "description", "difficulty", "tags"];
+  const allowedKeys = [
+    "title",
+    "description",
+    "difficulty",
+    "tags",
+    "modality",
+    "dicomFiles",
+    "isPublished",
+  ];
   const payloadKeys = Object.keys(payload);
 
   if (payloadKeys.length === 0) {
@@ -153,6 +178,18 @@ const buildUpdatePayload = (payload = {}) => {
     updates.tags = normalizeTags(payload.tags);
   }
 
+  if (payload.modality !== undefined) {
+    updates.modality = payload.modality;
+  }
+
+  if (payload.dicomFiles !== undefined) {
+    updates.dicomFiles = payload.dicomFiles;
+  }
+
+  if (payload.isPublished !== undefined) {
+    updates.isPublished = payload.isPublished;
+  }
+
   return updates;
 };
 
@@ -175,9 +212,7 @@ exports.createCase = async (payload = {}, userId) => {
   const casePayload = buildCreatePayload(payload, userId);
   const caseDoc = await Case.create(casePayload);
 
-  return serializeCase(
-    await caseDoc.populate("createdBy", "name email role"),
-  );
+  return serializeCase(await caseDoc.populate("createdBy", "name email role"));
 };
 
 exports.getCases = async (query = {}) => {

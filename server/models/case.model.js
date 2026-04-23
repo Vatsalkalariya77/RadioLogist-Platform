@@ -34,6 +34,21 @@ const caseSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    dicomFiles: {
+      type: [String],
+      default: [],
+    },
+
+    modality: {
+      type: String,
+      enum: ["CT", "MRI", "X-ray", "Ultrasound"],
+      required: true,
+    },
+
+    isPublished: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
