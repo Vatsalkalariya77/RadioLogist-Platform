@@ -2,13 +2,13 @@ const mongoose = require("mongoose");
 
 const Submission = require("../../models/submission.model");
 const Case = require("../../models/case.model");
+const Question = require("../../models/question.model");
 const AppError = require("../../utils/appError");
 const { assertPayloadObject } = require("../../utils/auth");
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 100;
-const REVIEW_STATUSES = ["submitted", "reviewed"];
 
 const normalizeString = (value) =>
   typeof value === "string" ? value.trim().replace(/\s+/g, " ") : "";
@@ -33,19 +33,10 @@ const parsePositiveInteger = (value, fallback, fieldName) => {
   return parsedValue;
 };
 
-const validateReviewStatus = (status) => {
-  if (!REVIEW_STATUSES.includes(status)) {
-    throw new AppError(
-      `Invalid status. Allowed values are: ${REVIEW_STATUSES.join(", ")}`,
-      400,
-    );
-  }
-};
-
 const buildCreatePayload = (payload = {}, userId) => {
   assertPayloadObject(payload);
 
-  const allowedKeys = ["caseId", "answer"];
+  const allowedKeys = ["caseId", "answers"];
   const payloadKeys = Object.keys(payload);
   const invalidKeys = payloadKeys.filter((key) => !allowedKeys.includes(key));
 
@@ -57,29 +48,75 @@ const buildCreatePayload = (payload = {}, userId) => {
   }
 
   const caseId = payload.caseId;
-  const answer = normalizeString(payload.answer);
 
-  if (!caseId || !answer) {
-    throw new AppError("caseId and answer are required", 400);
+  if (!caseId) {
+    throw new AppError("caseId is required", 400);
   }
 
   validateObjectId(caseId, "caseId");
 
-  if (answer.length < 5) {
-    throw new AppError("answer must be at least 5 characters long", 400);
+  if (!Array.isArray(payload.answers) || payload.answers.length === 0) {
+    throw new AppError("answers must be a non-empty array", 400);
   }
+
+  const seenQuestionIds = new Set();
+  const answers = payload.answers.map((answerItem, index) => {
+    if (!answerItem || typeof answerItem !== "object" || Array.isArray(answerItem)) {
+      throw new AppError(`answers[${index}] must be an object`, 400);
+    }
+
+    const answerAllowedKeys = ["questionId", "answer"];
+    const answerKeys = Object.keys(answerItem);
+    const invalidAnswerKeys = answerKeys.filter(
+      (key) => !answerAllowedKeys.includes(key),
+    );
+
+    if (invalidAnswerKeys.length > 0) {
+      throw new AppError(
+        `Invalid fields in answers[${index}]: ${invalidAnswerKeys.join(", ")}. Allowed fields are: ${answerAllowedKeys.join(", ")}`,
+        400,
+      );
+    }
+
+    const questionId = answerItem.questionId;
+    const answer = normalizeString(answerItem.answer);
+
+    if (!questionId || !answer) {
+      throw new AppError(
+        `answers[${index}] must include questionId and answer`,
+        400,
+      );
+    }
+
+    validateObjectId(questionId, `answers[${index}].questionId`);
+
+    if (seenQuestionIds.has(questionId.toString())) {
+      throw new AppError("Duplicate questionId values are not allowed", 400);
+    }
+
+    if (answer.length > 5000) {
+      throw new AppError("answer must be at most 5000 characters long", 400);
+    }
+
+    seenQuestionIds.add(questionId.toString());
+
+    return {
+      questionId,
+      answer,
+    };
+  });
 
   return {
     caseId,
     userId,
-    answer,
+    answers,
   };
 };
 
 const buildReviewPayload = (payload = {}) => {
   assertPayloadObject(payload);
 
-  const allowedKeys = ["score", "feedback", "status"];
+  const allowedKeys = ["score", "feedback"];
   const payloadKeys = Object.keys(payload);
 
   if (payloadKeys.length === 0) {
@@ -97,36 +134,41 @@ const buildReviewPayload = (payload = {}) => {
 
   const updates = {};
 
-  if (payload.score !== undefined) {
-    if (typeof payload.score !== "number" || Number.isNaN(payload.score)) {
-      throw new AppError("score must be a number", 400);
-    }
-
-    if (payload.score < 0 || payload.score > 100) {
-      throw new AppError("score must be between 0 and 100", 400);
-    }
-
-    updates.score = payload.score;
+  if (payload.score === undefined) {
+    throw new AppError("score is required to review a submission", 400);
   }
+
+  if (typeof payload.score !== "number" || Number.isNaN(payload.score)) {
+    throw new AppError("score must be a number", 400);
+  }
+
+  if (payload.score < 0 || payload.score > 100) {
+    throw new AppError("score must be between 0 and 100", 400);
+  }
+
+  updates.score = payload.score;
 
   if (payload.feedback !== undefined) {
     const feedback = normalizeString(payload.feedback);
     updates.feedback = feedback;
   }
 
-  if (payload.status !== undefined) {
-    const status = normalizeString(payload.status).toLowerCase();
-
-    if (!status) {
-      throw new AppError("status is required", 400);
-    }
-
-    validateReviewStatus(status);
-    updates.status = status;
-  }
+  updates.status = "reviewed";
 
   return updates;
 };
+
+const serializeAnswer = (answerItem) => ({
+  questionId: answerItem.questionId?._id
+    ? {
+        id: answerItem.questionId._id.toString(),
+        questionText: answerItem.questionId.questionText,
+        type: answerItem.questionId.type,
+        marks: answerItem.questionId.marks,
+      }
+    : answerItem.questionId.toString(),
+  answer: answerItem.answer,
+});
 
 const serializeSubmission = (submissionDoc) => ({
   id: submissionDoc._id.toString(),
@@ -143,7 +185,7 @@ const serializeSubmission = (submissionDoc) => ({
         email: submissionDoc.userId.email,
       }
     : submissionDoc.userId.toString(),
-  answer: submissionDoc.answer,
+  answers: submissionDoc.answers.map(serializeAnswer),
   status: submissionDoc.status,
   feedback: submissionDoc.feedback,
   score: submissionDoc.score,
@@ -154,7 +196,8 @@ const serializeSubmission = (submissionDoc) => ({
 const populateSubmissionQuery = (query) =>
   query
     .populate("caseId", "title")
-    .populate("userId", "name email");
+    .populate("userId", "name email")
+    .populate("answers.questionId", "questionText type marks");
 
 const getSubmissionByIdOrThrow = async (submissionId) => {
   validateObjectId(submissionId, "submission ID");
@@ -182,13 +225,26 @@ exports.createSubmission = async (payload = {}, currentUser) => {
     throw new AppError("Case not found", 404);
   }
 
+  const questionIds = submissionPayload.answers.map((answer) => answer.questionId);
+const questions = await Question.find({
+  _id: { $in: questionIds },
+  caseId: submissionPayload.caseId,
+}).select("_id");
+
+if (questions.length !== questionIds.length) {
+  throw new AppError(
+    "All questionIds must belong to the provided case",
+    400
+  );
+}
+
   const existingSubmission = await Submission.exists({
     caseId: submissionPayload.caseId,
     userId: currentUser._id,
   });
 
   if (existingSubmission) {
-    throw new AppError("You have already submitted an answer for this case", 409);
+    throw new AppError("You have already submitted answers for this case", 409);
   }
 
   let submission;
@@ -197,7 +253,7 @@ exports.createSubmission = async (payload = {}, currentUser) => {
     submission = await Submission.create(submissionPayload);
   } catch (error) {
     if (error?.code === 11000) {
-      throw new AppError("You have already submitted an answer for this case", 409);
+      throw new AppError("You have already submitted answers for this case", 409);
     }
 
     throw error;

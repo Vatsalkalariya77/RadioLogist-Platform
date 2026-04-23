@@ -16,7 +16,7 @@ router.use(protect);
 router.post("/", restrictTo("student"), createSubmission);
 router.get("/me", restrictTo("student"), getMySubmissions);
 router.get("/", restrictTo("admin", "superadmin"), getAllSubmissions);
+router.patch("/:id/review", restrictTo("admin", "superadmin"), reviewSubmission);
 router.get("/:id", getSubmissionById);
-router.patch("/:id", restrictTo("admin", "superadmin"), reviewSubmission);
 
 module.exports = router;

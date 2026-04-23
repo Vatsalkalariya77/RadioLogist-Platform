@@ -12,12 +12,28 @@ const submissionSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    answer: {
-      type: String,
+    answers: {
+      type: [
+        {
+          questionId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Question",
+            required: true,
+          },
+          answer: {
+            type: String,
+            required: true,
+            trim: true,
+            minlength: 1,
+            maxlength: 5000,
+          },
+        },
+      ],
       required: true,
-      trim: true,
-      minlength: 5,
-      maxlength: 10000,
+      validate: {
+        validator: (answers) => Array.isArray(answers) && answers.length > 0,
+        message: "answers must contain at least one answer",
+      },
     },
     status: {
       type: String,
@@ -42,5 +58,17 @@ const submissionSchema = new mongoose.Schema(
 );
 
 submissionSchema.index({ caseId: 1, userId: 1 }, { unique: true });
+
+submissionSchema.path("answers").validate(function validateUniqueQuestionIds(
+  answers,
+) {
+  if (!Array.isArray(answers)) {
+    return false;
+  }
+
+  const questionIds = answers.map((answer) => answer.questionId?.toString());
+
+  return questionIds.length === new Set(questionIds).size;
+}, "Duplicate questionId values are not allowed");
 
 module.exports = mongoose.model("Submission", submissionSchema);
