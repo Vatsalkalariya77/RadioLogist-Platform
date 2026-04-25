@@ -269,3 +269,31 @@ exports.deleteCase = async (caseId) => {
     throw new AppError("Case not found", 404);
   }
 };
+
+exports.addDicomFiles = async (caseId, filePaths = []) => {
+  validateObjectId(caseId);
+
+  if (!Array.isArray(filePaths) || filePaths.length === 0) {
+    throw new AppError("At least one DICOM file path is required", 400);
+  }
+
+  const caseDoc = await Case.findById(caseId).populate(
+    "createdBy",
+    "name email role",
+  );
+
+  if (!caseDoc) {
+    throw new AppError("Case not found", 404);
+  }
+
+  if (!caseDoc.isPublished) {
+  throw new AppError("Cannot upload DICOM to unpublished case", 400);
+}
+
+  caseDoc.dicomFiles = [
+  ...new Set([...caseDoc.dicomFiles, ...filePaths])
+];
+  await caseDoc.save();
+
+  return serializeCase(caseDoc);
+};

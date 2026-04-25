@@ -6,8 +6,12 @@ const {
   getCaseById,
   updateCase,
   deleteCase,
+  uploadDicomFiles,
 } = require("./case.controller");
 const { protect, restrictTo } = require("../../middlewares/auth.middleware");
+const {
+  uploadDicomFiles: uploadDicomMiddleware,
+} = require("../../middlewares/upload.middleware");
 
 const router = express.Router();
 
@@ -17,6 +21,13 @@ router
   .route("/")
   .post(restrictTo("admin", "superadmin"), createCase)
   .get(getCases);
+
+router.post(
+  "/:id/upload-dicom",
+  restrictTo("admin", "superadmin"),
+  uploadDicomMiddleware,
+  uploadDicomFiles,
+);
 
 router
   .route("/:id")

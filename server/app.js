@@ -35,6 +35,7 @@ app.use(
   })
 );
 app.use(express.json({ limit: "10kb" }));
+app.use("/uploads", express.static("server/uploads"));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
