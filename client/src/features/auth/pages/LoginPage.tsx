@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useLogin } from "../features/auth/hooks/useLogin";
-import { loginSchema, type LoginFormValues } from "../features/auth/auth.schema";
+import { useLogin } from "../hooks/useLogin";
+import { loginSchema, type LoginFormValues } from "../services/auth.schema";
 import axios from "axios";
 import { Link } from "react-router-dom";
 

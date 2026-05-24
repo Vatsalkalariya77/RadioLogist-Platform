@@ -1,8 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import AuthLayout from "../layouts/AuthLayout";
-import MainLayout from "../layouts/MainLayout";
-import LoginPage from "../pages/LoginPage";
-import RegisterPage from "../pages/RegisterPage";
+import DashboardLayout from "../layouts/DashboardLayout";
+import LazyRouteElement from "./LazyRouteElement";
 import ProtectedRoute from "./ProtectedRoute";
 
 export const router = createBrowserRouter([
@@ -11,11 +10,11 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "/login",
-        element: <LoginPage />,
+        element: <LazyRouteElement page="login" />,
       },
       {
         path: "/register",
-        element: <RegisterPage />,
+        element: <LazyRouteElement page="register" />,
       },
     ],
   },
@@ -24,11 +23,19 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute allowedRoles={["student"]} />,
     children: [
       {
-        element: <MainLayout />,
+        element: <DashboardLayout />,
         children: [
           {
             path: "dashboard",
-            element: <div>Student Dashboard</div>,
+            element: <LazyRouteElement page="studentDashboard" />,
+          },
+          {
+            path: "cases",
+            element: <LazyRouteElement page="studentCases" />,
+          },
+          {
+            path: "progress",
+            element: <LazyRouteElement page="studentProgress" />,
           },
         ],
       },
@@ -39,11 +46,19 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute allowedRoles={["admin"]} />,
     children: [
       {
-        element: <MainLayout />,
+        element: <DashboardLayout />,
         children: [
           {
             path: "dashboard",
-            element: <div>Admin Dashboard</div>,
+            element: <LazyRouteElement page="adminDashboard" />,
+          },
+          {
+            path: "create-case",
+            element: <LazyRouteElement page="adminCreateCase" />,
+          },
+          {
+            path: "manage-cases",
+            element: <LazyRouteElement page="adminManageCases" />,
           },
         ],
       },
@@ -54,11 +69,11 @@ export const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        element: <MainLayout />,
+        element: <DashboardLayout />,
         children: [
           {
             index: true,
-            element: <div>Home / General Dashboard</div>,
+            element: <LazyRouteElement page="generalDashboard" />,
           },
         ],
       },

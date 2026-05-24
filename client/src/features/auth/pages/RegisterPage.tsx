@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRegister } from "../features/auth/hooks/useRegister";
-import { registerSchema, type RegisterFormValues } from "../features/auth/auth.schema";
+import { useRegister } from "../hooks/useRegister";
+import { registerSchema, type RegisterFormValues } from "../services/auth.schema";
 import axios from "axios";
 import { Link } from "react-router-dom";
 

@@ -1,9 +1,7 @@
-import { Outlet, Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
 const AuthLayout = () => {
   const token = localStorage.getItem("token");
-
-  // ✅ Safe user parsing
   let user = null;
 
   try {
@@ -13,17 +11,20 @@ const AuthLayout = () => {
     user = null;
   }
 
-  // ✅ Redirect if already logged in
   if (token && user) {
     if (user.role === "admin") {
       return <Navigate to="/admin/dashboard" replace />;
-    } else if (user.role === "student") {
-      return <Navigate to="/student/dashboard" replace />;
-    } else if (user.role === "superadmin") {
-      return <Navigate to="/superadmin/dashboard" replace />;
-    } else {
-      return <Navigate to="/" replace />;
     }
+
+    if (user.role === "student") {
+      return <Navigate to="/student/dashboard" replace />;
+    }
+
+    if (user.role === "superadmin") {
+      return <Navigate to="/superadmin/dashboard" replace />;
+    }
+
+    return <Navigate to="/" replace />;
   }
 
   return (

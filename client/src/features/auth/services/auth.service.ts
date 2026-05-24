@@ -1,5 +1,5 @@
-import api from "../../services/api";
-import type { LoginPayload, RegisterPayload } from "./auth.types";
+import api from "../../../services/api";
+import type { LoginPayload, RegisterPayload } from "../../../types/auth";
 
 export const loginUser = async (payload: LoginPayload) => {
   const response = await api.post("/auth/login", payload);

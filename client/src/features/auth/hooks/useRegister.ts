@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import { registerUser } from "../auth.service";
-import type { AuthResponse, RegisterPayload } from "../auth.types";
+import { registerUser } from "../services/auth.service";
+import type { AuthResponse, RegisterPayload } from "../../../types/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
