@@ -6,6 +6,7 @@ import PageHeader from "../../../components/common/PageHeader";
 import { createCaseSchema, type CreateCaseFormValues, type CreateCasePayload } from "../services/case.schema";
 import { useCreateCase } from "../hooks/useCreateCase";
 import QuestionBuilder from "../components/QuestionBuilder";
+import CustomSelect from "../../../components/common/CustomSelect";
 
 const AdminCreateCase = () => {
   const { createCase: submitCase, isPending } = useCreateCase();
@@ -94,7 +95,7 @@ const AdminCreateCase = () => {
           {/* Active Case Banner */}
           <div className="flex justify-between items-center bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
             <div>
-              <p className="text-3xs font-extrabold uppercase tracking-widest text-slate-400">
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
                 Active Context
               </p>
               <h3 className="text-base font-bold text-slate-800 mt-1">{createdCaseTitle}</h3>
@@ -105,7 +106,7 @@ const AdminCreateCase = () => {
                 setCreatedCaseTitle("");
                 reset();
               }}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
+              className="btn-outline px-4 py-2 text-xs font-bold"
             >
               Create Another Case
             </button>
@@ -123,7 +124,7 @@ const AdminCreateCase = () => {
             >
               {/* Title */}
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
                   <span>Title *</span>
                   {errors.title && (
                     <span className="text-xs font-medium text-rose-500">
@@ -136,17 +137,17 @@ const AdminCreateCase = () => {
                   placeholder="e.g. Acute Subdural Hematoma"
                   {...register("title")}
                   disabled={isPending}
-                  className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200 ${
+                  className={`input-standard ${
                     errors.title
-                      ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 bg-rose-50/10"
-                      : "border-slate-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 bg-white"
+                      ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 bg-rose-50/10"
+                      : ""
                   }`}
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
                   <span>Clinical Description *</span>
                   {errors.description && (
                     <span className="text-xs font-medium text-rose-500">
@@ -159,10 +160,10 @@ const AdminCreateCase = () => {
                   placeholder="Provide clinical history, physical exam findings, and other relevant case details..."
                   {...register("description")}
                   disabled={isPending}
-                  className={`w-full resize-none rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200 ${
+                  className={`textarea-standard ${
                     errors.description
-                      ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 bg-rose-50/10"
-                      : "border-slate-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 bg-white"
+                      ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 bg-rose-50/10"
+                      : ""
                   }`}
                 />
               </div>
@@ -171,7 +172,7 @@ const AdminCreateCase = () => {
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 {/* Modality */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
                     <span>Modality *</span>
                     {errors.modality && (
                       <span className="text-xs font-medium text-rose-500">
@@ -179,25 +180,23 @@ const AdminCreateCase = () => {
                       </span>
                     )}
                   </label>
-                  <select
-                    {...register("modality")}
+                  <CustomSelect
+                    value={watch("modality")}
+                    onChange={(val) => setValue("modality", val as "MRI" | "CT" | "X-Ray" | "Ultrasound", { shouldValidate: true })}
+                    options={[
+                      { value: "MRI", label: "MRI (Magnetic Resonance Imaging)" },
+                      { value: "CT", label: "CT (Computed Tomography)" },
+                      { value: "X-Ray", label: "X-Ray (Radiography)" },
+                      { value: "Ultrasound", label: "Ultrasound (Ultrasonography)" },
+                    ]}
                     disabled={isPending}
-                    className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200 ${
-                      errors.modality
-                        ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 bg-rose-50/10"
-                        : "border-slate-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 bg-white"
-                    }`}
-                  >
-                    <option value="MRI">MRI (Magnetic Resonance Imaging)</option>
-                    <option value="CT">CT (Computed Tomography)</option>
-                    <option value="X-Ray">X-Ray (Radiography)</option>
-                    <option value="Ultrasound">Ultrasound (Ultrasonography)</option>
-                  </select>
+                    error={errors.modality?.message}
+                  />
                 </div>
 
                 {/* Difficulty (Segmented Control) */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
                     <span>Difficulty Level *</span>
                     {errors.difficulty && (
                       <span className="text-xs font-medium text-rose-500">
@@ -212,10 +211,10 @@ const AdminCreateCase = () => {
                         key={difficulty}
                         disabled={isPending}
                         onClick={() => setValue("difficulty", difficulty.toLowerCase() as "easy" | "medium" | "hard", { shouldValidate: true })}
-                        className={`flex-1 rounded-xl border py-2.5 text-sm font-semibold transition-all duration-200 ${
+                        className={`flex-1 rounded-xl border py-2.5 text-xs font-semibold transition-all duration-200 cursor-pointer ${
                           watch("difficulty") === difficulty.toLowerCase()
-                            ? "border-teal-600 bg-teal-600 text-white shadow-sm shadow-teal-100"
-                            : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+                            ? "border-teal-600 bg-teal-600 text-white shadow-md shadow-teal-600/10"
+                            : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300"
                         } disabled:opacity-50 disabled:pointer-events-none`}
                       >
                         {difficulty}
@@ -227,7 +226,7 @@ const AdminCreateCase = () => {
 
               {/* Tags */}
               <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
                   <span>Tags (comma-separated)</span>
                   {errors.tags && (
                     <span className="text-xs font-medium text-rose-500">
@@ -240,10 +239,10 @@ const AdminCreateCase = () => {
                   placeholder="e.g. brain, trauma, emergency"
                   {...register("tags")}
                   disabled={isPending}
-                  className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200 ${
+                  className={`input-standard ${
                     errors.tags
-                      ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 bg-rose-50/10"
-                      : "border-slate-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 bg-white"
+                      ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 bg-rose-50/10"
+                      : ""
                   }`}
                 />
               </div>
@@ -254,14 +253,14 @@ const AdminCreateCase = () => {
                   type="button"
                   onClick={() => reset()}
                   disabled={isPending}
-                  className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none transition-colors duration-200"
+                  className="btn-outline px-5 py-2.5 text-xs"
                 >
                   Reset
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 disabled:bg-teal-600/70 disabled:pointer-events-none transition-all duration-200 shadow-md shadow-teal-600/10"
+                  className="btn-primary px-5 py-2.5 text-xs"
                 >
                   {isPending && (
                     <svg className="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">

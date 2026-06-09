@@ -39,7 +39,7 @@ const StudentCases = () => {
           placeholder="Search cases"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-50 sm:max-w-sm"
+          className="input-standard sm:max-w-sm"
         />
 
         <div className="flex flex-wrap gap-2">
@@ -47,10 +47,10 @@ const StudentCases = () => {
             <button
               key={modality}
               onClick={() => setFilter(modality)}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${
+              className={`rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer ${
                 filter === modality
-                  ? "border-teal-600 bg-teal-600 text-white"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                  ? "border-teal-600 bg-teal-600 text-white shadow-sm shadow-teal-600/10"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
               }`}
             >
               {modality}
@@ -62,7 +62,7 @@ const StudentCases = () => {
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <thead className="table-header-standard">
               <tr>
                 <th className="px-5 py-3 font-semibold">Case ID</th>
                 <th className="px-5 py-3 font-semibold">Modality</th>
@@ -76,19 +76,19 @@ const StudentCases = () => {
             <tbody className="divide-y divide-slate-100 text-sm">
               {filteredCases.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center font-medium text-slate-500">
+                  <td colSpan={7} className="px-5 py-8 text-center font-medium text-slate-400">
                     No cases match the current filters.
                   </td>
                 </tr>
               ) : (
                 filteredCases.map((caseItem) => (
-                  <tr key={caseItem.id} className="hover:bg-slate-50">
+                  <tr key={caseItem.id} className="table-row-standard">
                     <td className="px-5 py-4 font-semibold text-slate-900">{caseItem.id}</td>
                     <td className="px-5 py-4">
                       <StatusBadge tone="info">{caseItem.modality}</StatusBadge>
                     </td>
                     <td className="px-5 py-4 text-slate-700">{caseItem.organ}</td>
-                    <td className="px-5 py-4 text-slate-500">{caseItem.code}</td>
+                    <td className="px-5 py-4 text-slate-550">{caseItem.code}</td>
                     <td className="px-5 py-4">
                       <StatusBadge tone={caseItem.difficulty === "Hard" ? "danger" : caseItem.difficulty === "Medium" ? "warning" : "success"}>
                         {caseItem.difficulty}
@@ -102,7 +102,7 @@ const StudentCases = () => {
                     <td className="px-5 py-4 text-right">
                       <button
                         onClick={() => alert(`Launching case ${caseItem.id} in viewer...`)}
-                        className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700"
+                        className="btn-primary py-1.5 px-3.5 inline-flex"
                       >
                         Diagnose
                       </button>

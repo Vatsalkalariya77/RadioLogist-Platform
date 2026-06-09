@@ -113,16 +113,16 @@ const LoginPage = () => {
             <div className="space-y-10">
               {/* Email Field */}
               <div className="relative group">
-                <label className="absolute -top-6 left-0 text-[11px] font-bold text-[#41B3B4] uppercase tracking-wider">
+                <label className="absolute -top-6 left-0 text-[10px] font-bold text-slate-400 group-focus-within:text-[#41B3B4] transition-colors uppercase tracking-wider">
                   Email Address
                 </label>
-                <div className="flex items-center border-b-2 border-gray-200 focus-within:border-[#41B3B4] transition-all py-2">
+                <div className="flex items-center border-b-2 border-slate-200 focus-within:border-[#41B3B4] transition-all py-2">
                   <input
                     type="email"
                     {...register("email")}
                     disabled={isPending}
                     placeholder="yourname@gmail.com"
-                    className="w-full bg-transparent outline-none text-slate-700 placeholder-slate-300 text-sm py-1"
+                    className="w-full bg-transparent border-0 outline-none focus:ring-0 text-slate-700 placeholder-slate-300 text-sm py-1 font-sans"
                   />
                   <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -139,16 +139,16 @@ const LoginPage = () => {
 
               {/* Password Field */}
               <div className="relative group">
-                <label className="absolute -top-6 left-0 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                <label className="absolute -top-6 left-0 text-[10px] font-bold text-slate-400 group-focus-within:text-[#41B3B4] transition-colors uppercase tracking-wider">
                   Password
                 </label>
-                <div className="flex items-center border-b-2 border-gray-200 focus-within:border-[#41B3B4] transition-all py-2">
+                <div className="flex items-center border-b-2 border-slate-200 focus-within:border-[#41B3B4] transition-all py-2">
                   <input
                     type="password"
                     {...register("password")}
                     disabled={isPending}
                     placeholder="••••••••"
-                    className="w-full bg-transparent outline-none text-slate-700 placeholder-slate-300 text-sm py-1"
+                    className="w-full bg-transparent border-0 outline-none focus:ring-0 text-slate-700 placeholder-slate-300 text-sm py-1 font-sans"
                   />
                   <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -156,7 +156,7 @@ const LoginPage = () => {
                   </svg>
                 </div>
                 <div className="flex justify-end mt-2">
-                  <button type="button" className="text-[10px] font-bold text-[#41B3B4] hover:opacity-80 transition-opacity">
+                  <button type="button" className="text-[10px] font-bold text-[#41B3B4] hover:opacity-80 transition-opacity cursor-pointer">
                     Forgot Password?
                   </button>
                 </div>
@@ -173,7 +173,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full py-4 bg-[#41B3B4] hover:bg-[#369B9C] text-white rounded-xl font-bold text-sm tracking-widest transition-all shadow-lg active:scale-[0.98] disabled:opacity-70 mt-4"
+              className="w-full py-4 bg-[#41B3B4] hover:bg-[#369B9C] text-white rounded-xl font-bold text-xs tracking-widest transition-all shadow-lg active:scale-[0.98] disabled:opacity-70 mt-4 cursor-pointer"
             >
               {isPending ? "PROCESSING..." : "SIGN IN"}
             </button>

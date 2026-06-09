@@ -30,7 +30,7 @@ const AdminManageCases = () => {
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <thead className="table-header-standard">
               <tr>
                 <th className="px-5 py-3 font-semibold">Case ID</th>
                 <th className="px-5 py-3 font-semibold">Modality</th>
@@ -44,36 +44,36 @@ const AdminManageCases = () => {
             <tbody className="divide-y divide-slate-100 text-sm">
               {cases.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-8 text-center font-medium text-slate-500">
+                  <td colSpan={7} className="px-5 py-8 text-center font-medium text-slate-400">
                     No cases are currently published.
                   </td>
                 </tr>
               ) : (
                 cases.map((caseItem) => (
-                  <tr key={caseItem.id} className="hover:bg-slate-50">
+                  <tr key={caseItem.id} className="table-row-standard">
                     <td className="px-5 py-4 font-semibold text-slate-900">{caseItem.id}</td>
                     <td className="px-5 py-4">
                       <StatusBadge tone="info">{caseItem.modality}</StatusBadge>
                     </td>
                     <td className="px-5 py-4 text-slate-700">{caseItem.organ}</td>
-                    <td className="px-5 py-4 text-slate-500">{caseItem.code}</td>
+                    <td className="px-5 py-4 text-slate-400">{caseItem.code}</td>
                     <td className="px-5 py-4">
                       <StatusBadge tone={caseItem.difficulty === "Hard" ? "danger" : caseItem.difficulty === "Medium" ? "warning" : "success"}>
                         {caseItem.difficulty}
                       </StatusBadge>
                     </td>
-                    <td className="px-5 py-4 text-slate-500">{caseItem.date}</td>
+                    <td className="px-5 py-4 text-slate-400">{caseItem.date}</td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={() => alert(`Opening editor for ${caseItem.id}...`)}
-                          className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                          className="btn-outline py-1.5 px-3 inline-flex"
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(caseItem.id)}
-                          className="rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-50"
+                          className="btn-destructive py-1.5 px-3 inline-flex"
                         >
                           Delete
                         </button>

@@ -43,10 +43,10 @@ const StudentDashboard = () => {
               <button
                 key={modality}
                 onClick={() => setSelectedModality(modality)}
-                className={`rounded-lg border px-3 py-1.5 text-xs font-semibold ${
+                className={`rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer ${
                   selectedModality === modality
-                    ? "border-teal-600 bg-teal-600 text-white"
-                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                    ? "border-teal-600 bg-teal-600 text-white shadow-sm shadow-teal-600/10"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 {modality}
@@ -58,7 +58,7 @@ const StudentDashboard = () => {
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <thead className="table-header-standard">
                 <tr>
                   <th className="px-5 py-3 font-semibold">Case ID</th>
                   <th className="px-5 py-3 font-semibold">Modality</th>
@@ -71,7 +71,7 @@ const StudentDashboard = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
                 {filteredCases.map((caseItem) => (
-                  <tr key={caseItem.id} className="hover:bg-slate-50">
+                  <tr key={caseItem.id} className="table-row-standard">
                     <td className="px-5 py-4 font-semibold text-slate-900">{caseItem.id}</td>
                     <td className="px-5 py-4">
                       <StatusBadge tone="info">{caseItem.modality}</StatusBadge>
@@ -91,7 +91,7 @@ const StudentDashboard = () => {
                     <td className="px-5 py-4 text-right">
                       <button
                         onClick={() => alert(`Launching case ${caseItem.id} in viewer...`)}
-                        className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700"
+                        className="btn-primary py-1.5 px-3.5 inline-flex"
                       >
                         Diagnose
                       </button>

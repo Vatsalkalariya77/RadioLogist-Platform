@@ -47,7 +47,7 @@ const AdminDashboard = () => {
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+              <thead className="table-header-standard">
                 <tr>
                   <th className="px-5 py-3 font-semibold">Clinician</th>
                   <th className="px-5 py-3 font-semibold">License</th>
@@ -60,20 +60,20 @@ const AdminDashboard = () => {
               <tbody className="divide-y divide-slate-100 text-sm">
                 {approvals.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-5 py-8 text-center font-medium text-slate-500">
+                    <td colSpan={6} className="px-5 py-8 text-center font-medium text-slate-400">
                       No credential reviews are pending.
                     </td>
                   </tr>
                 ) : (
                   approvals.map((approval) => (
-                    <tr key={approval.id} className="hover:bg-slate-50">
+                    <tr key={approval.id} className="table-row-standard">
                       <td className="px-5 py-4">
                         <p className="font-semibold text-slate-900">{approval.name}</p>
-                        <p className="mt-0.5 text-xs text-slate-500">{approval.email}</p>
+                        <p className="mt-0.5 text-xs text-slate-400">{approval.email}</p>
                       </td>
                       <td className="px-5 py-4 font-medium text-slate-700">{approval.license}</td>
                       <td className="px-5 py-4 text-slate-600">{approval.role}</td>
-                      <td className="px-5 py-4 text-slate-500">{approval.date}</td>
+                      <td className="px-5 py-4 text-slate-400">{approval.date}</td>
                       <td className="px-5 py-4">
                         <StatusBadge tone={approval.status === "Approved" ? "success" : "warning"}>
                           {approval.status}
@@ -84,19 +84,19 @@ const AdminDashboard = () => {
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() => handleApprove(approval.id, approval.name)}
-                              className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700"
+                              className="btn-primary py-1.5 px-3.5 inline-flex"
                             >
                               Approve
                             </button>
                             <button
                               onClick={() => handleReject(approval.id, approval.name)}
-                              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                              className="btn-outline py-1.5 px-3.5 inline-flex"
                             >
                               Decline
                             </button>
                           </div>
                         ) : (
-                          <p className="text-right text-xs font-semibold text-slate-500">Completed</p>
+                          <p className="text-right text-xs font-semibold text-slate-400">Completed</p>
                         )}
                       </td>
                     </tr>

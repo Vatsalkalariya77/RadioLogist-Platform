@@ -26,12 +26,12 @@ const StudentProgress = () => {
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 px-5 py-4">
+        <div className="border-b border-slate-100 px-5 py-4">
           <h2 className="text-sm font-semibold text-slate-900">Recent Submissions</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <thead className="table-header-standard">
               <tr>
                 <th className="px-5 py-3 font-semibold">Submission</th>
                 <th className="px-5 py-3 font-semibold">Case</th>
@@ -43,7 +43,7 @@ const StudentProgress = () => {
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
               {recentSubmissions.map((submission) => (
-                <tr key={submission.id} className="hover:bg-slate-50">
+                <tr key={submission.id} className="table-row-standard">
                   <td className="px-5 py-4 font-semibold text-slate-900">{submission.id}</td>
                   <td className="px-5 py-4 text-slate-700">{submission.caseId}</td>
                   <td className="px-5 py-4">
@@ -55,7 +55,7 @@ const StudentProgress = () => {
                       {submission.status}
                     </StatusBadge>
                   </td>
-                  <td className="px-5 py-4 text-slate-500">{submission.date}</td>
+                  <td className="px-5 py-4 text-slate-400">{submission.date}</td>
                 </tr>
               ))}
             </tbody>

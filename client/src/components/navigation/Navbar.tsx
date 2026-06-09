@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import { getInitials } from "../../utils/name";
 
 interface NavbarProps {
   userRole: string;
@@ -17,9 +18,20 @@ const Navbar = ({
   setSidebarOpen,
  
 }: NavbarProps) => {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+    // Initialize correctly
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = () => {
     api.post("/auth/logout").catch((err) => {
@@ -38,7 +50,11 @@ const Navbar = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/85 px-4 shadow-sm backdrop-blur-md sm:px-6 lg:px-8">
+    <header className={`fixed top-0 right-0 left-0 lg:left-72 z-30 flex h-16 items-center justify-between border-b bg-white/85 px-4 backdrop-blur-md transition-all duration-300 sm:px-6 lg:px-8 ${
+      isScrolled
+        ? "border-slate-200/80 shadow-md shadow-slate-100/40"
+        : "border-slate-200 shadow-sm"
+    }`}>
       {/* --- Left Side: Mobile Menu Button & Dynamic Title --- */}
       <div className="flex items-center gap-3">
         <button
@@ -79,7 +95,7 @@ const Navbar = ({
           <input
             type="text"
             placeholder="Search radiology cases..."
-            className="w-56 rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 pl-10 pr-4 text-xs font-medium outline-none transition-all focus:border-teal-500 focus:bg-white focus:ring-4 focus:ring-teal-50"
+            className="w-56 rounded-xl border border-slate-200 bg-slate-50/70 py-2.5 pl-10 pr-4 text-xs font-medium outline-none transition-all focus:border-teal-500 focus:bg-white focus:ring-4 focus:ring-teal-500/10"
           />
           <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -95,24 +111,24 @@ const Navbar = ({
               setNotificationsOpen(!notificationsOpen);
               setDropdownOpen(false);
             }}
-            className="relative rounded-xl p-2.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+            className="relative rounded-xl p-2.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors cursor-pointer"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5.5 w-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
             <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-teal-500 ring-2 ring-white animate-pulse" />
           </button>
 
           {notificationsOpen && (
-            <div className="absolute right-0 mt-3 w-80 rounded-2xl border border-slate-100 bg-white p-4.5 shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-3 duration-250">
+            <div className="absolute right-0 mt-3 w-80 rounded-2xl border border-slate-100 bg-white p-4 shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
                 <span className="text-xs font-bold text-slate-800">System Notifications</span>
                 <span className="text-[10px] font-bold text-teal-600 hover:underline cursor-pointer">Mark all read</span>
               </div>
               <div className="space-y-3">
                 <div className="flex gap-3 rounded-lg p-2 hover:bg-slate-50 transition-colors cursor-pointer">
-                  <div className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
@@ -122,8 +138,8 @@ const Navbar = ({
                   </div>
                 </div>
                 <div className="flex gap-3 rounded-lg p-2 hover:bg-slate-50 transition-colors cursor-pointer">
-                  <div className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
@@ -147,10 +163,10 @@ const Navbar = ({
               setDropdownOpen(!dropdownOpen);
               setNotificationsOpen(false);
             }}
-            className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50/40 p-1.5 pr-3 hover:bg-slate-50 transition-all"
+            className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50/40 p-1.5 pr-3 hover:bg-slate-50 transition-all cursor-pointer"
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-600 text-white font-extrabold text-sm shadow-md shadow-teal-600/10">
-              {userName.substring(0, 2).toUpperCase()}
+              {getInitials(userName)}
             </div>
             <div className="hidden text-left sm:block">
               <p className="text-xs font-bold text-slate-800 leading-none">{userName}</p>
@@ -164,7 +180,7 @@ const Navbar = ({
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-3 w-56 rounded-2xl border border-slate-100 bg-white p-2 shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-3 duration-250">
+            <div className="absolute right-0 mt-3 w-56 rounded-2xl border border-slate-100 bg-white p-2 shadow-xl ring-1 ring-black/5 animate-in fade-in slide-in-from-top-2 duration-200">
               <div className="px-4 py-3 border-b border-slate-50 mb-1.5">
                 <p className="text-xs font-bold text-slate-700">{userName}</p>
                 <p className="text-[10px] text-slate-400 font-medium truncate mt-0.5">{userEmail}</p>
@@ -174,7 +190,7 @@ const Navbar = ({
                   setDropdownOpen(false);
                   alert("Feature under active construction!");
                 }}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -186,7 +202,7 @@ const Navbar = ({
                   setDropdownOpen(false);
                   alert("Feature under active construction!");
                 }}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
@@ -196,7 +212,7 @@ const Navbar = ({
               <div className="my-1.5 border-t border-slate-50" />
               <button
                 onClick={handleLogout}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-xs font-bold text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

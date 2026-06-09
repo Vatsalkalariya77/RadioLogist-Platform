@@ -27,9 +27,9 @@ const DashboardLayout = () => {
   if (!user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-slate-50">
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center gap-3.5">
           <svg
-            className="h-8 w-8 animate-spin text-teal-600"
+            className="h-7 w-7 animate-spin text-teal-600"
             fill="none"
             viewBox="0 0 24 24"
           >
@@ -48,8 +48,8 @@ const DashboardLayout = () => {
             />
           </svg>
 
-          <span className="text-sm font-bold text-slate-500">
-            Initializing session...
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Initializing Session...
           </span>
         </div>
       </div>
@@ -65,7 +65,7 @@ const DashboardLayout = () => {
         setIsOpen={setSidebarOpen}
       />
 
-      <div className="flex min-h-screen flex-col lg:pl-72">
+      <div className="flex min-h-screen flex-col lg:pl-72 pt-16">
         <Navbar
           userRole={user.role}
           userName={user.name}

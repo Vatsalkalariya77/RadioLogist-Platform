@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
 @layer base {
   :root {
     --foreground-rgb: 0, 0, 0;
@@ -7,9 +11,118 @@
     --background-end-rgb: 255, 255, 255;
   }
 
-  body {
-    @apply m-0 p-0 overflow-x-hidden;
+  html, body {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
   }
+  html::-webkit-scrollbar, body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+
+  body {
+    @apply m-0 p-0 overflow-x-hidden bg-slate-50 text-slate-600 antialiased font-sans;
+  }
+
+  /* Force pointer cursor on clickable controls */
+  button,
+  a,
+  select,
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="button"],
+  input[type="submit"],
+  [role="button"] {
+    cursor: pointer !important;
+  }
+
+  /* Clear focus styles with standard glow ring */
+  button:focus-visible,
+  a:focus-visible {
+    @apply outline-none ring-2 ring-teal-500/40 border-teal-500;
+  }
+
+  /* Selection override */
+  ::selection {
+    background-color: rgba(20, 184, 166, 0.16);
+    color: #0f766e;
+  }
+
+  /* Browser Autofill Styling Reset */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  textarea:-webkit-autofill:active,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus,
+  select:-webkit-autofill:active {
+    -webkit-text-fill-color: currentColor !important;
+    transition: background-color 5000000s ease-in-out 0s;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    caret-color: currentColor !important;
+  }
+
+  input:-moz-autofill,
+  textarea:-moz-autofill,
+  select:-moz-autofill {
+    filter: none !important;
+    box-shadow: 0 0 0 100px transparent inset !important;
+    text-fill-color: currentColor !important;
+  }
+}
+
+/* Design System Utilities */
+.btn-primary {
+  @apply rounded-xl bg-teal-500 px-4 py-2.5 text-xs font-semibold text-white transition-all duration-200 active:scale-[0.98] shadow-md shadow-teal-500/10 hover:bg-teal-600 hover:shadow-lg disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2;
+}
+
+.btn-secondary {
+  @apply rounded-xl bg-slate-100 px-4 py-2.5 text-xs font-semibold text-slate-700 transition-all duration-200 active:scale-[0.98] hover:bg-slate-200 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2;
+}
+
+.btn-outline {
+  @apply rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition-all duration-200 active:scale-[0.98] hover:bg-slate-50 hover:border-slate-300 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2;
+}
+
+.btn-destructive {
+  @apply rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-xs font-semibold text-rose-700 transition-all duration-200 active:scale-[0.98] hover:bg-rose-50 hover:border-rose-300 hover:text-rose-800 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2;
+}
+
+.btn-ghost {
+  @apply rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-600 transition-all duration-200 hover:bg-slate-100 hover:text-slate-800 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2;
+}
+
+.input-standard {
+  @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 disabled:opacity-50;
+}
+
+.textarea-standard {
+  @apply w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 disabled:opacity-50;
+}
+
+.select-standard {
+  @apply w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-all duration-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 disabled:opacity-50 appearance-none pr-10;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-size: 1.25rem;
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+}
+
+.card-standard {
+  @apply rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow duration-300;
+}
+
+.table-header-standard {
+  @apply border-b border-slate-200 bg-slate-50/75 text-[10px] font-bold uppercase tracking-widest text-slate-500;
+}
+
+.table-row-standard {
+  @apply hover:bg-slate-50/50 transition-colors duration-150;
 }
 
 @layer utilities {
@@ -22,5 +135,13 @@
     33% { transform: translate(30px, -50px) scale(1.1); }
     66% { transform: translate(-20px, 20px) scale(0.9); }
     100% { transform: translate(0px, 0px) scale(1); }
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
   }
 }

@@ -1,6 +1,7 @@
 import type { MouseEvent, ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import api from "../../services/api";
+import { getInitials } from "../../utils/name";
 
 interface SidebarLink {
   name: string;
@@ -113,7 +114,7 @@ const Sidebar = ({ userRole, userName, isOpen, setIsOpen }: SidebarProps) => {
         }`}
       >
         {/* --- Header / Brand Logo --- */}
-        <div className="flex h-20 items-center justify-between px-6 border-b border-slate-850">
+        <div className="flex h-20 items-center justify-between px-6 border-b border-slate-800">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-400 to-blue-500 text-white shadow-lg shadow-teal-500/25 animate-pulse">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -133,7 +134,7 @@ const Sidebar = ({ userRole, userName, isOpen, setIsOpen }: SidebarProps) => {
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white lg:hidden"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white lg:hidden cursor-pointer"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -142,7 +143,7 @@ const Sidebar = ({ userRole, userName, isOpen, setIsOpen }: SidebarProps) => {
         </div>
 
         {/* --- Navigation Links --- */}
-        <nav className="flex-1 space-y-2.5 px-4 py-8 overflow-y-auto">
+        <nav className="flex-1 space-y-2 px-4 py-8 overflow-y-auto scrollbar-hide">
           <div className="px-3 mb-4 text-[10px] font-bold tracking-widest text-slate-500 uppercase">
             Navigation Menu
           </div>
@@ -152,10 +153,10 @@ const Sidebar = ({ userRole, userName, isOpen, setIsOpen }: SidebarProps) => {
               to={link.path}
               onClick={(e) => link.isMock && handleMockClick(e, link.name)}
               className={({ isActive }) =>
-                `flex items-center gap-4.5 rounded-xl px-4 py-3.5 text-sm font-semibold tracking-medium transition-all duration-200 group relative overflow-hidden ${
+                `flex items-center gap-4 rounded-xl px-4 py-3.5 text-sm font-semibold tracking-medium transition-all duration-200 group relative overflow-hidden cursor-pointer ${
                   isActive && !link.isMock
                     ? "bg-teal-600 text-white shadow-md shadow-teal-600/10"
-                    : "text-slate-400 hover:bg-slate-850 hover:text-slate-100"
+                    : "text-slate-400 hover:bg-slate-800/60 hover:text-slate-100"
                 }`
               }
             >
@@ -184,10 +185,10 @@ const Sidebar = ({ userRole, userName, isOpen, setIsOpen }: SidebarProps) => {
         </nav>
 
         {/* --- User Role Info & Logout --- */}
-        <div className="border-t border-slate-850 p-4">
-          <div className="flex items-center gap-3.5 rounded-2xl bg-slate-850/60 border border-slate-800/40 p-3.5 mb-3.5">
+        <div className="border-t border-slate-800 p-4">
+          <div className="flex items-center gap-3.5 rounded-2xl bg-slate-800/40 border border-slate-800/40 p-3.5 mb-3.5">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-500/10 text-teal-400 font-extrabold text-sm border border-teal-500/20">
-              {userName.substring(0, 2).toUpperCase()}
+              {getInitials(userName)}
             </div>
             <div className="min-w-0 flex-1">
               <h4 className="truncate text-xs font-bold text-slate-100">{userName}</h4>
@@ -199,7 +200,7 @@ const Sidebar = ({ userRole, userName, isOpen, setIsOpen }: SidebarProps) => {
 
           <button
             onClick={handleLogout}
-            className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-800 bg-transparent py-3.5 text-xs font-bold text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 hover:border-rose-500/20 transition-all duration-200 active:scale-[0.98]"
+            className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-800 bg-transparent py-3.5 text-xs font-bold text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 hover:border-rose-500/20 transition-all duration-200 active:scale-[0.98] cursor-pointer"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

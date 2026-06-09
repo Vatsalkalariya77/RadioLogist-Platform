@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { questionSchema, type QuestionFormValues, type CreateQuestionPayload } from "../services/question.schema";
 import { useCreateQuestion, useGetQuestions, useDeleteQuestion } from "../hooks/useCreateQuestion";
+import CustomSelect from "../../../components/common/CustomSelect";
 
 interface QuestionBuilderProps {
   caseId: string;
@@ -124,7 +125,7 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
     <div className="space-y-6">
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
         <h2 className="text-base font-bold text-slate-800">Step 2: Case Question Builder</h2>
-        <p className="text-xs text-slate-500 mt-1">
+        <p className="text-xs font-semibold text-slate-400 mt-1">
           Add diagnostics assessment questions to verify students' findings.
         </p>
       </div>
@@ -138,7 +139,7 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
           >
             {/* Question Type Toggle */}
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700">Question Type</label>
+              <label className="text-xs font-semibold text-slate-600">Question Type</label>
               <div className="flex gap-2">
                 {(["mcq", "text"] as const).map((type) => (
                   <button
@@ -146,10 +147,10 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                     key={type}
                     disabled={isPending}
                     onClick={() => setValue("type", type)}
-                    className={`flex-1 rounded-xl border py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 ${
+                    className={`flex-1 rounded-xl border py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                       questionType === type
-                        ? "border-teal-600 bg-teal-600 text-white shadow-sm shadow-teal-100"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300"
+                        ? "border-teal-600 bg-teal-600 text-white shadow-md shadow-teal-600/10"
+                        : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:border-slate-350"
                     }`}
                   >
                     {type === "mcq" ? "Multiple Choice" : "Open Text"}
@@ -160,7 +161,7 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
 
             {/* Question Text */}
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
                 <span>Question Text *</span>
                 {errors.questionText && (
                   <span className="text-xs font-medium text-rose-500">
@@ -173,17 +174,17 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                 placeholder="e.g. Which anatomical structure shows high signal intensity?"
                 {...register("questionText")}
                 disabled={isPending}
-                className={`w-full resize-none rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200 ${
+                className={`textarea-standard ${
                   errors.questionText
-                    ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 bg-rose-50/10"
-                    : "border-slate-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 bg-white"
+                    ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 bg-rose-50/10"
+                    : ""
                 }`}
               />
             </div>
 
             {/* Marks */}
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+              <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
                 <span>Marks (1 - 20) *</span>
                 {errors.marks && (
                   <span className="text-xs font-medium text-rose-500">
@@ -196,10 +197,10 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                 placeholder="5"
                 {...register("marks", { valueAsNumber: true })}
                 disabled={isPending}
-                className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200 ${
+                className={`input-standard ${
                   errors.marks
-                    ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 bg-rose-50/10"
-                    : "border-slate-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 bg-white"
+                    ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 bg-rose-50/10"
+                    : ""
                 }`}
               />
             </div>
@@ -207,7 +208,7 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
             {/* MCQ Fields */}
             {questionType === "mcq" && (
               <div className="space-y-4 pt-2 border-t border-slate-100">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   MCQ Options & Solution
                 </h4>
                 
@@ -216,10 +217,10 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                     const letter = String.fromCharCode(65 + index);
                     return (
                       <div key={field.id} className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-500 flex items-center justify-between">
+                        <label className="text-[11px] font-bold text-slate-400 flex items-center justify-between">
                           <span>Option {letter} *</span>
                           {errors.options?.[index]?.value && (
-                            <span className="text-rose-500 font-normal">
+                            <span className="text-rose-500 font-normal text-[10px]">
                               {errors.options[index]?.value?.message}
                             </span>
                           )}
@@ -229,7 +230,7 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                           placeholder={`Enter option ${letter}`}
                           {...register(`options.${index}.value`)}
                           disabled={isPending}
-                          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-50 transition-all"
+                          className="input-standard py-2"
                         />
                       </div>
                     );
@@ -238,7 +239,7 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
 
                 {/* Correct Answer Selection */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
                     <span>Correct Answer *</span>
                     {errors.correctAnswer && (
                       <span className="text-xs font-medium text-rose-500">
@@ -246,26 +247,22 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                       </span>
                     )}
                   </label>
-                  <select
-                    {...register("correctAnswer")}
-                    disabled={isPending}
-                    className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200 ${
-                      errors.correctAnswer
-                        ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 bg-rose-50/10"
-                        : "border-slate-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 bg-white"
-                    }`}
-                  >
-                    <option value="">Select correct option</option>
-                    {optionsValues.map((opt, idx) => {
+                  <CustomSelect
+                    value={watch("correctAnswer")}
+                    onChange={(val) => setValue("correctAnswer", val, { shouldValidate: true })}
+                    options={optionsValues.map((opt, idx) => {
                       const val = opt?.value || "";
                       const letter = String.fromCharCode(65 + idx);
-                      return (
-                        <option key={idx} value={val} disabled={!val}>
-                          {val ? `${letter}: ${val}` : `Option ${letter} (Empty)`}
-                        </option>
-                      );
+                      return {
+                        value: val,
+                        label: val ? `${letter}: ${val}` : `Option ${letter} (Empty)`,
+                        disabled: !val,
+                      };
                     })}
-                  </select>
+                    placeholder="Select correct option"
+                    disabled={isPending}
+                    error={errors.correctAnswer?.message}
+                  />
                 </div>
               </div>
             )}
@@ -273,12 +270,12 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
             {/* Text Fields */}
             {questionType === "text" && (
               <div className="space-y-4 pt-2 border-t border-slate-100">
-                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   Assessment Solution
                 </h4>
 
                 <div className="space-y-1.5">
-                  <label className="text-sm font-semibold text-slate-700 flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
                     <span>Expected Answer *</span>
                     {errors.expectedAnswer && (
                       <span className="text-xs font-medium text-rose-500">
@@ -291,10 +288,10 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                     placeholder="Describe the expected criteria or diagnostic answer..."
                     {...register("expectedAnswer")}
                     disabled={isPending}
-                    className={`w-full resize-none rounded-xl border px-4 py-2.5 text-sm outline-none transition-all duration-200 ${
+                    className={`textarea-standard ${
                       errors.expectedAnswer
-                        ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-50 bg-rose-50/10"
-                        : "border-slate-200 focus:border-teal-500 focus:ring-4 focus:ring-teal-50 bg-white"
+                        ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 bg-rose-50/10"
+                        : ""
                     }`}
                   />
                 </div>
@@ -306,7 +303,7 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-700 disabled:bg-teal-600/70 disabled:pointer-events-none transition-all duration-200 shadow-md shadow-teal-600/10"
+                className="btn-primary w-full py-2.5 text-xs"
               >
                 {isPending && (
                   <svg className="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
@@ -350,21 +347,21 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
               </p>
             </div>
           ) : (
-            <div className="space-y-4 overflow-y-auto max-h-[600px] pr-2">
+            <div className="space-y-4 overflow-y-auto max-h-[600px] pr-2 scrollbar-hide">
               {questions.map((question: any, idx: number) => (
                 <div
                   key={question.id || question._id}
-                  className="group relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:border-slate-300 transition-all animate-in fade-in slide-in-from-bottom-2 duration-300"
+                  className="group relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-all animate-in fade-in slide-in-from-bottom-2 duration-300"
                 >
                   {/* Delete Button */}
                   <button
                     type="button"
                     onClick={() => handleDelete(question.id || question._id)}
                     disabled={isPending}
-                    className="absolute top-4 right-4 rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                    className="absolute top-4 right-4 rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                     title="Delete Question"
                   >
-                    <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
@@ -372,7 +369,7 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                   <div className="flex flex-wrap gap-2 items-center mb-3">
                     <span className="text-slate-400 text-xs font-bold">Q{idx + 1}</span>
                     <span
-                      className={`rounded-full px-2.5 py-0.5 text-3xs font-extrabold uppercase tracking-widest ${
+                      className={`rounded-full px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-widest ${
                         question.type === "mcq"
                           ? "bg-teal-50 text-teal-700 border border-teal-100"
                           : "bg-indigo-50 text-indigo-700 border border-indigo-100"
@@ -380,7 +377,7 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                     >
                       {question.type === "mcq" ? "MCQ" : "Text"}
                     </span>
-                    <span className="rounded-full bg-slate-100 border border-slate-200 px-2 py-0.5 text-3xs font-extrabold uppercase text-slate-600 tracking-wider">
+                    <span className="rounded-full bg-slate-50 border border-slate-200 px-2 py-0.5 text-[9px] font-bold uppercase text-slate-500 tracking-wider">
                       {question.marks} {question.marks === 1 ? "Mark" : "Marks"}
                     </span>
                   </div>
@@ -398,13 +395,13 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                             key={optIdx}
                             className={`flex items-start gap-2.5 rounded-xl border p-2.5 text-xs transition-colors ${
                               isCorrect
-                                ? "border-emerald-200 bg-emerald-50 text-emerald-800 font-semibold shadow-sm"
+                                ? "border-emerald-250 bg-emerald-50/50 text-emerald-800 font-semibold shadow-sm"
                                 : "border-slate-100 bg-slate-50/50 text-slate-600"
                             }`}
                           >
                             <span
-                              className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full text-4xs font-bold ${
-                                isCorrect ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-600"
+                              className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full text-[9px] font-bold ${
+                                isCorrect ? "bg-emerald-600 text-white" : "bg-slate-200 text-slate-500"
                               }`}
                             >
                               {letter}
@@ -419,7 +416,7 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                   {/* Text Answers Preview */}
                   {question.type === "text" && question.expectedAnswer && (
                     <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/50 p-3.5 text-xs">
-                      <span className="font-bold text-slate-500 block mb-1">Expected Answer:</span>
+                      <span className="font-bold text-slate-400 block mb-1">Expected Answer:</span>
                       <p className="text-slate-700 italic leading-relaxed break-words">{question.expectedAnswer}</p>
                     </div>
                   )}
