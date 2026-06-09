@@ -92,26 +92,62 @@ const validateLoginPayload = (payload = {}) => {
   };
 };
 
-const getJwtConfig = () => {
-  const { JWT_SECRET, JWT_EXPIRES_IN, JWT_ISSUER, JWT_AUDIENCE } = process.env;
+const getAccessJwtConfig = () => {
+  const {
+    JWT_ACCESS_SECRET,
+    JWT_ACCESS_EXPIRES_IN,
+    JWT_SECRET,
+    JWT_EXPIRES_IN,
+    JWT_ISSUER,
+    JWT_AUDIENCE,
+  } = process.env;
+  const secret = JWT_ACCESS_SECRET || JWT_SECRET;
 
-  if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  if (!secret || secret.length < 32) {
     throw new AppError(
-      "JWT_SECRET must be configured and at least 32 characters long",
+      "JWT_ACCESS_SECRET must be configured and at least 32 characters long",
       500
     );
   }
 
   return {
-    secret: JWT_SECRET,
+    secret,
     options: {
       algorithm: "HS256",
-      expiresIn: JWT_EXPIRES_IN || "1h",
+      expiresIn: JWT_ACCESS_EXPIRES_IN || JWT_EXPIRES_IN || "15m",
       issuer: JWT_ISSUER || "radiologist-platform",
       audience: JWT_AUDIENCE || "radiologist-platform-users",
     },
   };
 };
+
+const getRefreshJwtConfig = () => {
+  const {
+    JWT_REFRESH_SECRET,
+    JWT_REFRESH_EXPIRES_IN,
+    JWT_ISSUER,
+    JWT_AUDIENCE,
+  } = process.env;
+
+  if (!JWT_REFRESH_SECRET || JWT_REFRESH_SECRET.length < 32) {
+    throw new AppError(
+      "JWT_REFRESH_SECRET must be configured and at least 32 characters long",
+      500
+    );
+  }
+
+  return {
+    secret: JWT_REFRESH_SECRET,
+    options: {
+      algorithm: "HS256",
+      expiresIn: JWT_REFRESH_EXPIRES_IN || "7d",
+      issuer: JWT_ISSUER || "radiologist-platform",
+      audience: JWT_AUDIENCE || "radiologist-platform-users",
+    },
+  };
+};
+
+const getJwtConfig = getAccessJwtConfig;
 
 const serializeUser = (user) => ({
   id: user._id.toString(),
@@ -129,6 +165,8 @@ module.exports = {
   assertStrongPassword,
   validateRegisterPayload,
   validateLoginPayload,
+  getAccessJwtConfig,
+  getRefreshJwtConfig,
   getJwtConfig,
   serializeUser,
 };

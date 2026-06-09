@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const authRoutes = require("./modules/auth/auth.routes");
 const userRoutes = require("./modules/user/user.routes");
 const caseRoutes = require("./modules/case/case.routes");
@@ -32,8 +33,10 @@ app.use(
 
       return callback(new Error("CORS policy does not allow this origin"));
     },
+    credentials: true,
   })
 );
+app.use(cookieParser());
 app.use(express.json({ limit: "10kb" }));
 app.use("/uploads", express.static("server/uploads"));
 

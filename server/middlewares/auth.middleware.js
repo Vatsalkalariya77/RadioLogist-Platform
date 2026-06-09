@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/appError");
 const User = require("../models/user.model");
-const { getJwtConfig } = require("../utils/auth");
+const { getAccessJwtConfig } = require("../utils/auth");
 
 exports.protect = async (req, res, next) => {
   let token;
@@ -14,8 +14,21 @@ exports.protect = async (req, res, next) => {
     return next(new AppError("Not authorized", 401));
   }
 
-  const { secret } = getJwtConfig();
-  const decoded = jwt.verify(token, secret);
+  let decoded;
+
+  try {
+    const { secret, options } = getAccessJwtConfig();
+    decoded = jwt.verify(token, secret, {
+      issuer: options.issuer,
+      audience: options.audience,
+    });
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return next(new AppError("Access token expired", 401));
+    }
+
+    return next(new AppError("Invalid access token", 401));
+  }
 
   const user = await User.findById(decoded.sub);
 
