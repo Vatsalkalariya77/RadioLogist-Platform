@@ -56,6 +56,12 @@ const normalizeOptions = (options) => {
   return normalizedOptions;
 };
 
+const validateExpectedAnswer = (expectedAnswer) => {
+  if (!expectedAnswer) {
+    throw new AppError("expectedAnswer is required for text questions", 400);
+  }
+};
+
 const validateMarks = (marks) => {
   if (typeof marks !== "number" || Number.isNaN(marks)) {
     throw new AppError("marks must be a number", 400);
@@ -76,8 +82,15 @@ const serializeQuestion = (questionDoc, hideAnswer = false) => ({
     : questionDoc.caseId.toString(),
   questionText: questionDoc.questionText,
   type: questionDoc.type,
-  options: questionDoc.options,
-  correctAnswer: hideAnswer ? undefined : questionDoc.correctAnswer,
+  options: questionDoc.type === "mcq" ? questionDoc.options : undefined,
+  correctAnswer:
+    !hideAnswer && questionDoc.type === "mcq"
+      ? questionDoc.correctAnswer
+      : undefined,
+  expectedAnswer:
+    !hideAnswer && questionDoc.type === "text"
+      ? questionDoc.expectedAnswer
+      : undefined,
   marks: questionDoc.marks,
   createdAt: questionDoc.createdAt,
   updatedAt: questionDoc.updatedAt,
@@ -94,6 +107,7 @@ const buildCreatePayload = (payload = {}) => {
     "type",
     "options",
     "correctAnswer",
+    "expectedAnswer",
     "marks",
   ];
   const payloadKeys = Object.keys(payload);
@@ -143,6 +157,12 @@ const buildCreatePayload = (payload = {}) => {
 
     questionPayload.options = options;
     questionPayload.correctAnswer = correctAnswer;
+  } else {
+    const expectedAnswer = normalizeString(payload.expectedAnswer);
+
+    validateExpectedAnswer(expectedAnswer);
+
+    questionPayload.expectedAnswer = expectedAnswer;
   }
 
   return questionPayload;
@@ -151,7 +171,14 @@ const buildCreatePayload = (payload = {}) => {
 const buildUpdatePayload = (existingQuestion, payload = {}) => {
   assertPayloadObject(payload);
 
-  const allowedKeys = ["questionText", "type", "options", "correctAnswer", "marks"];
+  const allowedKeys = [
+    "questionText",
+    "type",
+    "options",
+    "correctAnswer",
+    "expectedAnswer",
+    "marks",
+  ];
   const payloadKeys = Object.keys(payload);
 
   if (payloadKeys.length === 0) {
@@ -209,9 +236,18 @@ const buildUpdatePayload = (existingQuestion, payload = {}) => {
 
     updates.options = options;
     updates.correctAnswer = correctAnswer;
+    updates.expectedAnswer = undefined;
   } else {
+    const expectedAnswer =
+      payload.expectedAnswer !== undefined
+        ? normalizeString(payload.expectedAnswer)
+        : existingQuestion.expectedAnswer;
+
+    validateExpectedAnswer(expectedAnswer);
+
     updates.options = undefined;
     updates.correctAnswer = undefined;
+    updates.expectedAnswer = expectedAnswer;
   }
 
   return updates;
@@ -246,8 +282,8 @@ exports.getQuestionsByCase = async (caseId, currentUser) => {
   );
 
   return questions.map((q) =>
-  serializeQuestion(q, currentUser.role === "student")
-);
+    serializeQuestion(q, currentUser.role === "student"),
+  );
 };
 
 exports.updateQuestion = async (questionId, payload = {}) => {

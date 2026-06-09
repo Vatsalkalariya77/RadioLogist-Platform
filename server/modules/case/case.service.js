@@ -286,13 +286,9 @@ exports.addDicomFiles = async (caseId, filePaths = []) => {
     throw new AppError("Case not found", 404);
   }
 
-  if (!caseDoc.isPublished) {
-  throw new AppError("Cannot upload DICOM to unpublished case", 400);
-}
-
   caseDoc.dicomFiles = [
-  ...new Set([...caseDoc.dicomFiles, ...filePaths])
-];
+    ...new Set([...caseDoc.dicomFiles, ...filePaths]),
+  ];
   await caseDoc.save();
 
   return serializeCase(caseDoc);

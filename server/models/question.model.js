@@ -24,8 +24,8 @@ const questionSchema = new mongoose.Schema(
       default: undefined,
       validate: {
         validator(options) {
-          if (this.type !== "mcq") {
-            return true;
+          if (this.type === "text") {
+            return options === undefined;
           }
 
           return (
@@ -45,13 +45,30 @@ const questionSchema = new mongoose.Schema(
       },
       validate: {
         validator(correctAnswer) {
-          if (this.type !== "mcq") {
-            return true;
+          if (this.type === "text") {
+            return !correctAnswer;
           }
 
           return Array.isArray(this.options) && this.options.includes(correctAnswer);
         },
         message: "correctAnswer must be one of the provided options",
+      },
+    },
+    expectedAnswer: {
+      type: String,
+      trim: true,
+      required() {
+        return this.type === "text";
+      },
+      validate: {
+        validator(expectedAnswer) {
+          if (this.type === "mcq") {
+            return !expectedAnswer;
+          }
+
+          return typeof expectedAnswer === "string" && expectedAnswer.trim();
+        },
+        message: "expectedAnswer is required for text questions",
       },
     },
     marks: {
