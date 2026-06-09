@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../services/api";
 
 interface NavbarProps {
   userRole: string;
@@ -21,6 +22,9 @@ const Navbar = ({
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    api.post("/auth/logout").catch((err) => {
+      console.error("Logout API call failed:", err);
+    });
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/login");
