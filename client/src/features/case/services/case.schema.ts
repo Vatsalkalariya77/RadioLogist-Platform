@@ -9,7 +9,7 @@ export const createCaseSchema = z.object({
     .string()
     .min(10, "Description must be at least 10 characters")
     .max(5000, "Description cannot exceed 5000 characters"),
-  modality: z.enum(["CT", "MRI", "X-Ray", "Ultrasound"]),
+  modality: z.enum(["CT", "MRI", "X-ray", "Ultrasound"]),
   difficulty: z.enum(["easy", "medium", "hard"]),
   tags: z.string(),
 });
@@ -22,4 +22,5 @@ export interface CreateCasePayload {
   modality: string;
   difficulty: "easy" | "medium" | "hard";
   tags: string[];
+  isPublished?: boolean;
 }

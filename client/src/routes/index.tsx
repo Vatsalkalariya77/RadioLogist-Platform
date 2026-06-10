@@ -43,7 +43,7 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <ProtectedRoute allowedRoles={["admin"]} />,
+    element: <ProtectedRoute allowedRoles={["admin", "superadmin"]} />,
     children: [
       {
         element: <DashboardLayout />,
@@ -54,6 +54,10 @@ export const router = createBrowserRouter([
           },
           {
             path: "create-case",
+            element: <LazyRouteElement page="adminCreateCase" />,
+          },
+          {
+            path: "cases/:caseId/edit",
             element: <LazyRouteElement page="adminCreateCase" />,
           },
           {

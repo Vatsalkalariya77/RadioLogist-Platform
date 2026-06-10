@@ -5,7 +5,7 @@ import StatusBadge from "../../../components/common/StatusBadge";
 const cases = [
   { id: "CASE-MR-709", modality: "MRI", organ: "Brain", code: "T2-FLAIR", difficulty: "Hard", status: "Approved" },
   { id: "CASE-CT-104", modality: "CT", organ: "Chest", code: "High-Res-Chest", difficulty: "Medium", status: "Approved" },
-  { id: "CASE-XR-422", modality: "X-Ray", organ: "Knee", code: "AP/Lateral", difficulty: "Easy", status: "Pending" },
+  { id: "CASE-XR-422", modality: "X-ray", organ: "Knee", code: "AP/Lateral", difficulty: "Easy", status: "Pending" },
   { id: "CASE-MR-112", modality: "MRI", organ: "Spine", code: "Lumbar-Sagittal", difficulty: "Hard", status: "Approved" },
   { id: "CASE-US-305", modality: "Ultrasound", organ: "Abdomen", code: "RUQ-Complete", difficulty: "Medium", status: "Pending" },
   { id: "CASE-CT-912", modality: "CT", organ: "Abdomen", code: "Contrast-Enhanced", difficulty: "Hard", status: "Approved" },
@@ -43,7 +43,7 @@ const StudentCases = () => {
         />
 
         <div className="flex flex-wrap gap-2">
-          {["All", "MRI", "CT", "X-Ray", "Ultrasound"].map((modality) => (
+          {["All", "MRI", "CT", "X-ray", "Ultrasound"].map((modality) => (
             <button
               key={modality}
               onClick={() => setFilter(modality)}

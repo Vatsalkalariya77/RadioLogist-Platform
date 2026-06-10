@@ -14,7 +14,7 @@ export function useLogin() {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       // Role-based redirect
-      if (data.user.role === "admin") {
+      if (data.user.role === "admin" || data.user.role === "superadmin") {
         navigate("/admin/dashboard");
       } else if (data.user.role === "student") {
         navigate("/student/dashboard");

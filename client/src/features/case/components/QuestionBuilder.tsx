@@ -5,6 +5,7 @@ import axios from "axios";
 import { questionSchema, type QuestionFormValues, type CreateQuestionPayload } from "../services/question.schema";
 import { useCreateQuestion, useGetQuestions, useDeleteQuestion } from "../hooks/useCreateQuestion";
 import CustomSelect from "../../../components/common/CustomSelect";
+import ConfirmDialog from "../../../components/common/ConfirmDialog";
 
 interface QuestionBuilderProps {
   caseId: string;
@@ -14,6 +15,10 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
   const { data: questionsResponse, isLoading: isLoadingQuestions } = useGetQuestions(caseId);
   const createQuestionMutation = useCreateQuestion();
   const deleteQuestionMutation = useDeleteQuestion(caseId);
+
+  const userString = localStorage.getItem("user");
+  const user = userString ? JSON.parse(userString) : null;
+  const isSuperAdmin = user?.role === "superadmin";
 
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
@@ -101,13 +106,22 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
     }
   };
 
-  const handleDelete = async (questionId: string) => {
-    if (!window.confirm("Are you sure you want to delete this question?")) {
+  const [questionToDelete, setQuestionToDelete] = useState<{ id: string; text: string } | null>(null);
+
+  const handleDelete = (questionId: string, questionText: string) => {
+    if (!isSuperAdmin) {
+      triggerToast("error", "Unauthorized: Only superadmins can delete questions.");
       return;
     }
+    setQuestionToDelete({ id: questionId, text: questionText });
+  };
+
+  const confirmDelete = async () => {
+    if (!questionToDelete) return;
     try {
-      await deleteQuestionMutation.mutateAsync(questionId);
+      await deleteQuestionMutation.mutateAsync(questionToDelete.id);
       triggerToast("success", "Question deleted successfully!");
+      setQuestionToDelete(null);
     } catch (err: unknown) {
       const errorMessage = axios.isAxiosError(err)
         ? err.response?.data?.message || err.message
@@ -354,17 +368,19 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                   className="group relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-all animate-in fade-in slide-in-from-bottom-2 duration-300"
                 >
                   {/* Delete Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(question.id || question._id)}
-                    disabled={isPending}
-                    className="absolute top-4 right-4 rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
-                    title="Delete Question"
-                  >
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  {isSuperAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(question.id || question._id, question.questionText)}
+                      disabled={isPending}
+                      className="absolute top-4 right-4 rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
+                      title="Delete Question"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  )}
 
                   <div className="flex flex-wrap gap-2 items-center mb-3">
                     <span className="text-slate-400 text-xs font-bold">Q{idx + 1}</span>
@@ -471,6 +487,18 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!questionToDelete}
+        title="Delete Assessment Question"
+        description={`Are you sure you want to permanently delete this question: "${questionToDelete?.text || ""}"? This action cannot be undone.`}
+        confirmText="Delete Question"
+        cancelText="Cancel"
+        variant="danger"
+        loading={deleteQuestionMutation.isPending}
+        onConfirm={confirmDelete}
+        onCancel={() => setQuestionToDelete(null)}
+      />
     </div>
   );
 }

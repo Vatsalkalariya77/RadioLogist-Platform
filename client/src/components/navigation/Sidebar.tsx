@@ -90,7 +90,47 @@ const Sidebar = ({ userRole, userName, isOpen, setIsOpen }: SidebarProps) => {
     },
   ];
 
-  const links = userRole === "admin" ? adminLinks : studentLinks;
+  const superadminLinks: SidebarLink[] = [
+    {
+      name: "Dashboard",
+      path: "/admin/dashboard",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+        </svg>
+      ),
+    },
+    {
+      name: "Create Case",
+      path: "/admin/create-case",
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+        </svg>
+      ),
+    },
+    {
+      name: "Manage Cases",
+      path: "/admin/manage-cases",
+      icon: (
+        <svg xmlns="http://www.w3.org/2055/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" />
+        </svg>
+      ),
+    },
+  ];
+
+  const getLinksForRole = () => {
+    if (userRole === "superadmin") {
+      return superadminLinks;
+    }
+    if (userRole === "admin") {
+      return adminLinks;
+    }
+    return studentLinks;
+  };
+
+  const links = getLinksForRole();
 
   const handleMockClick = (e: MouseEvent, name: string) => {
     e.preventDefault();

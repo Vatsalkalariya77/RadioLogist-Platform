@@ -9,7 +9,7 @@ const GeneralDashboard = () => {
       const userString = localStorage.getItem("user");
       const user = userString ? JSON.parse(userString) : null;
       if (user) {
-        if (user.role === "admin") {
+        if (user.role === "admin" || user.role === "superadmin") {
           navigate("/admin/dashboard", { replace: true });
         } else if (user.role === "student") {
           navigate("/student/dashboard", { replace: true });

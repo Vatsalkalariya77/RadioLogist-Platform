@@ -6,7 +6,7 @@ import StatusBadge from "../../../../components/common/StatusBadge";
 const assignedCases = [
   { id: "CASE-MR-709", modality: "MRI", organ: "Brain", code: "T2-FLAIR", difficulty: "Hard", status: "Approved", date: "2026-05-20" },
   { id: "CASE-CT-104", modality: "CT", organ: "Chest", code: "High-Res-Chest", difficulty: "Medium", status: "Approved", date: "2026-05-18" },
-  { id: "CASE-XR-422", modality: "X-Ray", organ: "Knee", code: "AP/Lateral", difficulty: "Easy", status: "Pending", date: "2026-05-15" },
+  { id: "CASE-XR-422", modality: "X-ray", organ: "Knee", code: "AP/Lateral", difficulty: "Easy", status: "Pending", date: "2026-05-15" },
   { id: "CASE-MR-112", modality: "MRI", organ: "Spine", code: "Lumbar-Sagittal", difficulty: "Hard", status: "Approved", date: "2026-05-12" },
   { id: "CASE-US-305", modality: "Ultrasound", organ: "Abdomen", code: "RUQ-Complete", difficulty: "Medium", status: "Pending", date: "2026-05-10" },
 ];
@@ -39,7 +39,7 @@ const StudentDashboard = () => {
       <section className="space-y-4">
         <PageHeader title="Assigned Cases">
           <div className="flex flex-wrap gap-2">
-            {["All", "MRI", "CT", "X-Ray", "Ultrasound"].map((modality) => (
+            {["All", "MRI", "CT", "X-ray", "Ultrasound"].map((modality) => (
               <button
                 key={modality}
                 onClick={() => setSelectedModality(modality)}
