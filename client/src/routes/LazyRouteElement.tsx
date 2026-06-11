@@ -7,6 +7,7 @@ const pages = {
     () => import("../features/dashboard/pages/student/StudentDashboard")
   ),
   studentCases: lazy(() => import("../features/case/pages/StudentCases")),
+  studentCaseDetails: lazy(() => import("../features/case/pages/StudentCaseDetails")),
   studentProgress: lazy(() => import("../features/progress/pages/StudentProgress")),
   adminDashboard: lazy(
     () => import("../features/dashboard/pages/admin/AdminDashboard")

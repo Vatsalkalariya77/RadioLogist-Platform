@@ -34,6 +34,10 @@ export const router = createBrowserRouter([
             element: <LazyRouteElement page="studentCases" />,
           },
           {
+            path: "cases/:caseId",
+            element: <LazyRouteElement page="studentCaseDetails" />,
+          },
+          {
             path: "progress",
             element: <LazyRouteElement page="studentProgress" />,
           },

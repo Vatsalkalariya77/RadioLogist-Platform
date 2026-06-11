@@ -112,7 +112,9 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
 
     try {
       if (editingQuestionId) {
-        await updateQuestionMutation.mutateAsync({ id: editingQuestionId, payload });
+        // Strip out caseId as the backend reject validations for updates containing it
+        const { caseId: _, ...updatePayload } = payload;
+        await updateQuestionMutation.mutateAsync({ id: editingQuestionId, payload: updatePayload });
         triggerToast("success", "Question updated successfully!");
         setEditingQuestionId(null);
       } else {

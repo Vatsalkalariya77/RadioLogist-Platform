@@ -6,8 +6,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import PageHeader from "../../../components/common/PageHeader";
 import { createCaseSchema, type CreateCaseFormValues, type CreateCasePayload } from "../services/case.schema";
 import { useCreateCase, useGetCase, useUpdateCase } from "../hooks/useCreateCase";
+import { useGetQuestions } from "../hooks/useCreateQuestion";
 import QuestionBuilder from "../components/QuestionBuilder";
 import CustomSelect from "../../../components/common/CustomSelect";
+import StatusBadge from "../../../components/common/StatusBadge";
 
 const AdminCreateCase = () => {
   const { caseId } = useParams<{ caseId: string }>();
@@ -28,6 +30,32 @@ const AdminCreateCase = () => {
   const activeCaseTitle = caseData?.title || createdCaseTitle;
 
   const isPending = isCreating || isUpdating;
+
+  const { data: questionsResponse } = useGetQuestions(activeCaseId || "");
+  const questionsCount = questionsResponse?.data?.length || 0;
+
+  const handleTogglePublish = async () => {
+    if (!activeCaseId) return;
+    try {
+      await submitUpdateCase({
+        id: activeCaseId,
+        payload: { isPublished: !caseData?.isPublished },
+      });
+      triggerToast(
+        "success",
+        caseData?.isPublished
+          ? "Case reverted to draft successfully!"
+          : "Case published successfully!"
+      );
+    } catch (err: unknown) {
+      const errorMessage = axios.isAxiosError(err)
+        ? err.response?.data?.message || err.message
+        : err instanceof Error
+        ? err.message
+        : "Failed to update case status.";
+      triggerToast("error", errorMessage);
+    }
+  };
 
   const triggerToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -163,25 +191,71 @@ const AdminCreateCase = () => {
           {/* Active Case Banner */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white border border-slate-200 rounded-2xl p-5 shadow-sm gap-4">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
-                Active Context
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">
+                  Active Context
+                </span>
+                <StatusBadge tone={caseData?.isPublished ? "success" : "warning"}>
+                  {caseData?.isPublished ? "Published" : "Draft"}
+                </StatusBadge>
+              </div>
               <h3 className="text-base font-bold text-slate-800 mt-1">{activeCaseTitle}</h3>
               <p className="text-xs text-slate-400 mt-0.5">Modality: {caseData?.modality || watch("modality")} | Difficulty: {caseData?.difficulty || watch("difficulty")}</p>
+              {questionsCount === 0 && !caseData?.isPublished && (
+                <p className="text-[10px] font-semibold text-amber-600 mt-1.5 flex items-center gap-1">
+                  ⚠️ Add at least one question to enable publishing.
+                </p>
+              )}
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowDetailsForm((prev) => !prev)}
-                className="btn-outline px-4 py-2 text-xs font-bold"
-              >
-                {showDetailsForm ? "Hide Details Editor" : "Edit Case Details"}
-              </button>
-              <button
-                onClick={() => navigate("/admin/manage-cases")}
-                className="btn-primary px-4 py-2 text-xs font-bold"
-              >
-                Back to Cases List
-              </button>
+            <div className="flex flex-col md:flex-row items-end md:items-center gap-2">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowDetailsForm((prev) => !prev)}
+                  className="btn-outline px-4 py-2 text-xs font-bold"
+                >
+                  {showDetailsForm ? "Hide Details Editor" : "Edit Case Details"}
+                </button>
+
+                {caseData?.isPublished ? (
+                  <button
+                    type="button"
+                    onClick={handleTogglePublish}
+                    disabled={isPending}
+                    className="btn-outline px-4 py-2 text-xs font-bold text-amber-600 border-amber-250 hover:bg-amber-50 active:scale-[0.98] transition-all"
+                  >
+                    Unpublish Case
+                  </button>
+                ) : (
+                  <div className="relative group inline-block">
+                    <button
+                      type="button"
+                      onClick={handleTogglePublish}
+                      disabled={isPending || questionsCount === 0}
+                      className={`btn-primary px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-750 border-emerald-600 active:scale-[0.98] transition-all ${
+                        questionsCount === 0
+                          ? "opacity-50 cursor-not-allowed bg-slate-200 hover:bg-slate-200 border-slate-300 text-slate-400 active:scale-100"
+                          : ""
+                      }`}
+                    >
+                      Publish Case
+                    </button>
+                    {questionsCount === 0 && (
+                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-slate-800 text-white text-[10px] rounded-lg px-2.5 py-1.5 whitespace-nowrap shadow-lg z-20 font-bold border border-slate-700">
+                        Add questions first to publish
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => navigate("/admin/manage-cases")}
+                  className="btn-primary px-4 py-2 text-xs font-bold"
+                >
+                  Back to Cases List
+                </button>
+              </div>
             </div>
           </div>
 
