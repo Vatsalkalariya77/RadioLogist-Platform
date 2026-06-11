@@ -21,7 +21,8 @@ const AdminCreateCase = () => {
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [createdCaseId, setCreatedCaseId] = useState<string | null>(null);
   const [createdCaseTitle, setCreatedCaseTitle] = useState<string>("");
-  const [showDetailsForm, setShowDetailsForm] = useState(false);
+  const [showDetailsForm, setShowDetailsForm] = useState(!!caseId);
+  const [loadedCaseId, setLoadedCaseId] = useState<string | null>(null);
 
   const activeCaseId = caseId || createdCaseId;
   const activeCaseTitle = caseData?.title || createdCaseTitle;
@@ -55,7 +56,7 @@ const AdminCreateCase = () => {
 
   // Populate form when editing an existing case
   useEffect(() => {
-    if (caseData) {
+    if (caseData && caseId && loadedCaseId !== caseId) {
       reset({
         title: caseData.title || "",
         description: caseData.description || "",
@@ -63,8 +64,10 @@ const AdminCreateCase = () => {
         difficulty: (caseData.difficulty || "medium") as "easy" | "medium" | "hard",
         tags: caseData.tags ? caseData.tags.join(", ") : "",
       });
+      setLoadedCaseId(caseId);
+      setShowDetailsForm(true);
     }
-  }, [caseData, reset]);
+  }, [caseData, caseId, loadedCaseId, reset]);
 
   // Reset form when transitioning to a clean create case route
   useEffect(() => {
@@ -72,6 +75,7 @@ const AdminCreateCase = () => {
       setCreatedCaseId(null);
       setCreatedCaseTitle("");
       setShowDetailsForm(false);
+      setLoadedCaseId(null);
       reset({
         title: "",
         description: "",

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createQuestion, getQuestionsByCase, deleteQuestion } from "../services/question.service";
+import { createQuestion, getQuestionsByCase, deleteQuestion, updateQuestion } from "../services/question.service";
+import type { CreateQuestionPayload } from "../services/question.schema";
 
 export function useCreateQuestion() {
   const queryClient = useQueryClient();
@@ -19,6 +20,17 @@ export function useGetQuestions(caseId: string) {
   });
 }
 
+export function useUpdateQuestion(caseId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<CreateQuestionPayload> }) =>
+      updateQuestion(id, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["questions", caseId] });
+    },
+  });
+}
+
 export function useDeleteQuestion(caseId: string) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -28,3 +40,4 @@ export function useDeleteQuestion(caseId: string) {
     },
   });
 }
+

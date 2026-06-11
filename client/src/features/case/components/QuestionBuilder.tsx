@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { questionSchema, type QuestionFormValues, type CreateQuestionPayload } from "../services/question.schema";
-import { useCreateQuestion, useGetQuestions, useDeleteQuestion } from "../hooks/useCreateQuestion";
+import { useCreateQuestion, useGetQuestions, useDeleteQuestion, useUpdateQuestion } from "../hooks/useCreateQuestion";
 import CustomSelect from "../../../components/common/CustomSelect";
 import ConfirmDialog from "../../../components/common/ConfirmDialog";
 
@@ -14,13 +14,16 @@ interface QuestionBuilderProps {
 export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
   const { data: questionsResponse, isLoading: isLoadingQuestions } = useGetQuestions(caseId);
   const createQuestionMutation = useCreateQuestion();
+  const updateQuestionMutation = useUpdateQuestion(caseId);
   const deleteQuestionMutation = useDeleteQuestion(caseId);
 
   const userString = localStorage.getItem("user");
   const user = userString ? JSON.parse(userString) : null;
   const isSuperAdmin = user?.role === "superadmin";
+  const isAdmin = user?.role === "admin" || isSuperAdmin;
 
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
 
   const triggerToast = (type: "success" | "error", message: string) => {
     setToast({ type, message });
@@ -36,6 +39,7 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
     watch,
     setValue,
     reset,
+    clearErrors,
     formState: { errors },
   } = useForm<QuestionFormValues>({
     resolver: zodResolver(questionSchema),
@@ -57,16 +61,39 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
   const questionType = watch("type");
   const optionsValues = watch("options") || [];
 
-  // When type changes, reset type-specific fields to avoid schema validation pollution
-  useEffect(() => {
-    if (questionType === "text") {
-      setValue("options", undefined);
-      setValue("correctAnswer", undefined);
-    } else if (questionType === "mcq") {
-      setValue("options", [{ value: "" }, { value: "" }, { value: "" }, { value: "" }]);
-      setValue("expectedAnswer", undefined);
+  const handleStartEdit = (question: any) => {
+    try {
+      const qId = question.id || question._id;
+      setEditingQuestionId(qId);
+      reset({
+        type: question.type,
+        questionText: question.questionText || "",
+        options: question.type === "mcq" && question.options
+          ? question.options.map((opt: string) => ({ value: opt }))
+          : [{ value: "" }, { value: "" }, { value: "" }, { value: "" }],
+        correctAnswer: (question.type === "mcq" ? question.correctAnswer : "") || "",
+        expectedAnswer: (question.type === "text" ? question.expectedAnswer : "") || "",
+        marks: question.marks || 5,
+      });
+      clearErrors();
+    } catch (err) {
+      triggerToast("error", "Failed to load question details into form.");
+      console.error("Error loading question details:", err);
     }
-  }, [questionType, setValue]);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingQuestionId(null);
+    reset({
+      type: "mcq",
+      questionText: "",
+      options: [{ value: "" }, { value: "" }, { value: "" }, { value: "" }],
+      correctAnswer: "",
+      expectedAnswer: "",
+      marks: 5,
+    });
+    clearErrors();
+  };
 
   const onSubmit = async (data: QuestionFormValues) => {
     const payload: CreateQuestionPayload = {
@@ -84,8 +111,14 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
     }
 
     try {
-      await createQuestionMutation.mutateAsync(payload);
-      triggerToast("success", "Question added successfully!");
+      if (editingQuestionId) {
+        await updateQuestionMutation.mutateAsync({ id: editingQuestionId, payload });
+        triggerToast("success", "Question updated successfully!");
+        setEditingQuestionId(null);
+      } else {
+        await createQuestionMutation.mutateAsync(payload);
+        triggerToast("success", "Question added successfully!");
+      }
       
       // Reset form preserving type
       reset({
@@ -96,12 +129,13 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
         expectedAnswer: "",
         marks: 5,
       });
+      clearErrors();
     } catch (err: unknown) {
       const errorMessage = axios.isAxiosError(err)
         ? err.response?.data?.message || err.message
         : err instanceof Error
         ? err.message
-        : "Failed to create question";
+        : editingQuestionId ? "Failed to update question" : "Failed to create question";
       triggerToast("error", errorMessage);
     }
   };
@@ -132,15 +166,22 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
     }
   };
 
-  const questions = questionsResponse?.data || [];
-  const isPending = createQuestionMutation.isPending || deleteQuestionMutation.isPending;
+   const questions = questionsResponse?.data || [];
+  const isPending =
+    createQuestionMutation.isPending ||
+    updateQuestionMutation.isPending ||
+    deleteQuestionMutation.isPending;
 
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-        <h2 className="text-base font-bold text-slate-800">Step 2: Case Question Builder</h2>
+        <h2 className="text-base font-bold text-slate-800">
+          {editingQuestionId ? "Edit Assessment Question" : "Step 2: Case Question Builder"}
+        </h2>
         <p className="text-xs font-semibold text-slate-400 mt-1">
-          Add diagnostics assessment questions to verify students' findings.
+          {editingQuestionId
+            ? "Update the details of the selected assessment question."
+            : "Add diagnostics assessment questions to verify students' findings."}
         </p>
       </div>
 
@@ -160,11 +201,20 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                     type="button"
                     key={type}
                     disabled={isPending}
-                    onClick={() => setValue("type", type)}
+                    onClick={() => {
+                      setValue("type", type);
+                      if (type === "text") {
+                        setValue("options", undefined);
+                        setValue("correctAnswer", undefined);
+                      } else if (type === "mcq") {
+                        setValue("options", [{ value: "" }, { value: "" }, { value: "" }, { value: "" }]);
+                        setValue("expectedAnswer", undefined);
+                      }
+                    }}
                     className={`flex-1 rounded-xl border py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
                       questionType === type
                         ? "border-teal-600 bg-teal-600 text-white shadow-md shadow-teal-600/10"
-                        : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:border-slate-350"
+                        : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:border-slate-355"
                     }`}
                   >
                     {type === "mcq" ? "Multiple Choice" : "Open Text"}
@@ -220,104 +270,110 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
             </div>
 
             {/* MCQ Fields */}
-            {questionType === "mcq" && (
-              <div className="space-y-4 pt-2 border-t border-slate-100">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  MCQ Options & Solution
-                </h4>
-                
-                <div className="space-y-3">
-                  {fields.map((field, index) => {
-                    const letter = String.fromCharCode(65 + index);
-                    return (
-                      <div key={field.id} className="space-y-1">
-                        <label className="text-[11px] font-bold text-slate-400 flex items-center justify-between">
-                          <span>Option {letter} *</span>
-                          {errors.options?.[index]?.value && (
-                            <span className="text-rose-500 font-normal text-[10px]">
-                              {errors.options[index]?.value?.message}
-                            </span>
-                          )}
-                        </label>
-                        <input
-                          type="text"
-                          placeholder={`Enter option ${letter}`}
-                          {...register(`options.${index}.value`)}
-                          disabled={isPending}
-                          className="input-standard py-2"
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Correct Answer Selection */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
-                    <span>Correct Answer *</span>
-                    {errors.correctAnswer && (
-                      <span className="text-xs font-medium text-rose-500">
-                        {errors.correctAnswer.message}
-                      </span>
-                    )}
-                  </label>
-                  <CustomSelect
-                    value={watch("correctAnswer")}
-                    onChange={(val) => setValue("correctAnswer", val, { shouldValidate: true })}
-                    options={optionsValues.map((opt, idx) => {
-                      const val = opt?.value || "";
-                      const letter = String.fromCharCode(65 + idx);
-                      return {
-                        value: val,
-                        label: val ? `${letter}: ${val}` : `Option ${letter} (Empty)`,
-                        disabled: !val,
-                      };
-                    })}
-                    placeholder="Select correct option"
-                    disabled={isPending}
-                    error={errors.correctAnswer?.message}
-                  />
-                </div>
+            <div className={questionType === "mcq" ? "space-y-4 pt-2 border-t border-slate-100" : "hidden"}>
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                MCQ Options & Solution
+              </h4>
+              
+              <div className="space-y-3">
+                {fields.map((field, index) => {
+                  const letter = String.fromCharCode(65 + index);
+                  return (
+                    <div key={field.id} className="space-y-1">
+                      <label className="text-[11px] font-bold text-slate-400 flex items-center justify-between">
+                        <span>Option {letter} *</span>
+                        {errors.options?.[index]?.value && (
+                          <span className="text-rose-500 font-normal text-[10px]">
+                            {errors.options[index]?.value?.message}
+                          </span>
+                        )}
+                      </label>
+                      <input
+                        type="text"
+                        placeholder={`Enter option ${letter}`}
+                        {...register(`options.${index}.value`)}
+                        disabled={isPending}
+                        className="input-standard py-2"
+                      />
+                    </div>
+                  );
+                })}
               </div>
-            )}
+
+              {/* Correct Answer Selection */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
+                  <span>Correct Answer *</span>
+                  {errors.correctAnswer && (
+                    <span className="text-xs font-medium text-rose-500">
+                      {errors.correctAnswer.message}
+                    </span>
+                  )}
+                </label>
+                <CustomSelect
+                  value={watch("correctAnswer")}
+                  onChange={(val) => setValue("correctAnswer", val, { shouldValidate: true })}
+                  options={optionsValues.map((opt, idx) => {
+                    const val = opt?.value || "";
+                    const letter = String.fromCharCode(65 + idx);
+                    return {
+                      value: val,
+                      label: val ? `${letter}: ${val}` : `Option ${letter} (Empty)`,
+                      disabled: !val,
+                    };
+                  })}
+                  placeholder="Select correct option"
+                  disabled={isPending}
+                  error={errors.correctAnswer?.message}
+                />
+              </div>
+            </div>
 
             {/* Text Fields */}
-            {questionType === "text" && (
-              <div className="space-y-4 pt-2 border-t border-slate-100">
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  Assessment Solution
-                </h4>
+            <div className={questionType === "text" ? "space-y-4 pt-2 border-t border-slate-100" : "hidden"}>
+              <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Assessment Solution
+              </h4>
 
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
-                    <span>Expected Answer *</span>
-                    {errors.expectedAnswer && (
-                      <span className="text-xs font-medium text-rose-500">
-                        {errors.expectedAnswer.message}
-                      </span>
-                    )}
-                  </label>
-                  <textarea
-                    rows={4}
-                    placeholder="Describe the expected criteria or diagnostic answer..."
-                    {...register("expectedAnswer")}
-                    disabled={isPending}
-                    className={`textarea-standard ${
-                      errors.expectedAnswer
-                        ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 bg-rose-50/10"
-                        : ""
-                    }`}
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-600 flex items-center justify-between">
+                  <span>Expected Answer *</span>
+                  {errors.expectedAnswer && (
+                    <span className="text-xs font-medium text-rose-500">
+                      {errors.expectedAnswer.message}
+                    </span>
+                  )}
+                </label>
+                <textarea
+                  rows={4}
+                  placeholder="Describe the expected criteria or diagnostic answer..."
+                  {...register("expectedAnswer")}
+                  disabled={isPending}
+                  className={`textarea-standard ${
+                    errors.expectedAnswer
+                      ? "border-rose-300 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 bg-rose-50/10"
+                      : ""
+                  }`}
+                />
               </div>
-            )}
+            </div>
 
             {/* Action */}
-            <div className="pt-2">
+            <div className="pt-2 flex gap-3">
+              {editingQuestionId && (
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  disabled={isPending}
+                  className="btn-outline flex-1 py-2.5 text-xs font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+              )}
               <button
                 type="submit"
                 disabled={isPending}
-                className="btn-primary w-full py-2.5 text-xs"
+                className="btn-primary flex-1 py-2.5 text-xs font-semibold cursor-pointer"
               >
                 {isPending && (
                   <svg className="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
@@ -325,7 +381,7 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                 )}
-                <span>Add Question</span>
+                <span>{editingQuestionId ? "Save Changes" : "Add Question"}</span>
               </button>
             </div>
           </form>
@@ -378,6 +434,21 @@ export default function QuestionBuilder({ caseId }: QuestionBuilderProps) {
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  )}
+
+                  {/* Edit Button */}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => handleStartEdit(question)}
+                      disabled={isPending}
+                      className={`absolute top-4 ${isSuperAdmin ? "right-12" : "right-4"} rounded-lg p-1.5 text-slate-400 hover:bg-slate-50 hover:text-teal-600 transition-colors disabled:opacity-50 disabled:pointer-events-none cursor-pointer`}
+                      title="Edit Question"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
                     </button>
                   )}
