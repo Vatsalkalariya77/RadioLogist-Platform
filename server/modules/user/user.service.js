@@ -47,6 +47,14 @@ exports.getUsers = async (query = {}) => {
     filter.role = normalizedRole;
   }
 
+  if (query.search !== undefined && typeof query.search === "string" && query.search.trim().length > 0) {
+    const searchRegex = new RegExp(query.search.trim(), "i");
+    filter.$or = [
+      { name: searchRegex },
+      { email: searchRegex },
+    ];
+  }
+
   const skip = (page - 1) * limit;
 
   const [users, total] = await Promise.all([

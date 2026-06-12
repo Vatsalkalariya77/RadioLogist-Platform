@@ -21,7 +21,7 @@ const AuthLayout = () => {
     }
 
     if (user.role === "superadmin") {
-      return <Navigate to="/superadmin/dashboard" replace />;
+      return <Navigate to="/admin/dashboard" replace />;
     }
 
     return <Navigate to="/" replace />;

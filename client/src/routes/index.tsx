@@ -76,6 +76,15 @@ export const router = createBrowserRouter([
             path: "submissions/:submissionId",
             element: <LazyRouteElement page="adminSubmissionDetails" />,
           },
+          {
+            element: <ProtectedRoute allowedRoles={["superadmin"]} />,
+            children: [
+              {
+                path: "manage-admins",
+                element: <LazyRouteElement page="adminManageAdmins" />,
+              },
+            ],
+          },
         ],
       },
     ],

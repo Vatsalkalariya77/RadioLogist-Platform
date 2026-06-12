@@ -16,6 +16,7 @@ const pages = {
   adminManageCases: lazy(() => import("../features/case/pages/AdminManageCases")),
   adminSubmissionsList: lazy(() => import("../features/submission/pages/AdminSubmissionsList")),
   adminSubmissionDetails: lazy(() => import("../features/submission/pages/AdminSubmissionDetails")),
+  adminManageAdmins: lazy(() => import("../features/user/pages/AdminManageAdmins")),
   generalDashboard: lazy(
     () => import("../features/dashboard/pages/GeneralDashboard")
   ),
