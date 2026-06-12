@@ -166,7 +166,9 @@ const serializeAnswer = (answerItem) => ({
         type: answerItem.questionId.type,
         marks: answerItem.questionId.marks,
       }
-    : answerItem.questionId.toString(),
+    : answerItem.questionId
+    ? answerItem.questionId.toString()
+    : null,
   answer: answerItem.answer,
 });
 
@@ -177,14 +179,18 @@ const serializeSubmission = (submissionDoc) => ({
         id: submissionDoc.caseId._id.toString(),
         title: submissionDoc.caseId.title,
       }
-    : submissionDoc.caseId.toString(),
+    : submissionDoc.caseId
+    ? submissionDoc.caseId.toString()
+    : null,
   userId: submissionDoc.userId?._id
     ? {
         id: submissionDoc.userId._id.toString(),
         name: submissionDoc.userId.name,
         email: submissionDoc.userId.email,
       }
-    : submissionDoc.userId.toString(),
+    : submissionDoc.userId
+    ? submissionDoc.userId.toString()
+    : null,
   answers: submissionDoc.answers.map(serializeAnswer),
   status: submissionDoc.status,
   feedback: submissionDoc.feedback,
@@ -312,9 +318,15 @@ exports.getMySubmissions = async (currentUser) => {
 exports.getSubmissionById = async (submissionId, currentUser) => {
   const submission = await getSubmissionByIdOrThrow(submissionId);
 
+  const submissionUserId = submission.userId?._id
+    ? submission.userId._id.toString()
+    : submission.userId
+    ? submission.userId.toString()
+    : null;
+
   if (
     currentUser.role === "student" &&
-    submission.userId._id.toString() !== currentUser._id.toString()
+    submissionUserId !== currentUser._id.toString()
   ) {
     throw new AppError("You do not have permission to view this submission", 403);
   }

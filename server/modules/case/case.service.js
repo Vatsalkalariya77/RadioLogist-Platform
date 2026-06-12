@@ -63,7 +63,9 @@ const serializeCase = (caseDoc) => ({
         email: caseDoc.createdBy.email,
         role: caseDoc.createdBy.role,
       }
-    : caseDoc.createdBy.toString(),
+    : caseDoc.createdBy
+    ? caseDoc.createdBy.toString()
+    : null,
 
   createdAt: caseDoc.createdAt,
   updatedAt: caseDoc.updatedAt,

@@ -14,6 +14,8 @@ const pages = {
   ),
   adminCreateCase: lazy(() => import("../features/case/pages/AdminCreateCase")),
   adminManageCases: lazy(() => import("../features/case/pages/AdminManageCases")),
+  adminSubmissionsList: lazy(() => import("../features/submission/pages/AdminSubmissionsList")),
+  adminSubmissionDetails: lazy(() => import("../features/submission/pages/AdminSubmissionDetails")),
   generalDashboard: lazy(
     () => import("../features/dashboard/pages/GeneralDashboard")
   ),

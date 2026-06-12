@@ -79,7 +79,9 @@ const serializeQuestion = (questionDoc, hideAnswer = false) => ({
         id: questionDoc.caseId._id.toString(),
         title: questionDoc.caseId.title,
       }
-    : questionDoc.caseId.toString(),
+    : questionDoc.caseId
+    ? questionDoc.caseId.toString()
+    : null,
   questionText: questionDoc.questionText,
   type: questionDoc.type,
   options: questionDoc.type === "mcq" ? questionDoc.options : undefined,

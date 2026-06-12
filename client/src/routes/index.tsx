@@ -68,6 +68,14 @@ export const router = createBrowserRouter([
             path: "manage-cases",
             element: <LazyRouteElement page="adminManageCases" />,
           },
+          {
+            path: "submissions",
+            element: <LazyRouteElement page="adminSubmissionsList" />,
+          },
+          {
+            path: "submissions/:submissionId",
+            element: <LazyRouteElement page="adminSubmissionDetails" />,
+          },
         ],
       },
     ],
