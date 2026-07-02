@@ -124,6 +124,7 @@ exports.registerUser = async (payload = {}) => {
 exports.loginUser = async (payload = {}) => {
   const { email, password } = validateLoginPayload(payload);
   const user = await User.findOne({ email }).select("+password");
+  console.log("TRACE 1: MongoDB user document name:", user ? user.name : "null");
 
   if (!user) {
     throw new AppError("Invalid credentials", 401);
@@ -134,16 +135,26 @@ exports.loginUser = async (payload = {}) => {
     throw new AppError("Invalid credentials", 401);
   }
 
+  if (user.status === "deleted") {
+    throw new AppError("Invalid credentials", 401);
+  }
+
+  if (user.status === "blocked") {
+    throw new AppError("Your account has been blocked. Please contact support.", 403);
+  }
+
   const accessToken = signAccessToken(user);
   const refreshToken = signRefreshToken(user);
 
   await storeRefreshToken(user._id.toString(), refreshToken);
 
-  return {
+  const result = {
     accessToken,
     refreshToken,
     user: serializeUser(user),
   };
+  console.log("TRACE 2: User returned by loginUser() name:", result.user ? result.user.name : "null");
+  return result;
 };
 
 exports.refreshAccessToken = async (refreshToken) => {
@@ -165,6 +176,11 @@ exports.refreshAccessToken = async (refreshToken) => {
   if (!user) {
     await deleteRefreshToken(userId);
     throw new AppError("User not found", 404);
+  }
+
+  if (user.status === "blocked" || user.status === "deleted") {
+    await deleteRefreshToken(userId);
+    throw new AppError("Your account has been blocked. Please contact support.", 403);
   }
 
   const accessToken = signAccessToken(user);

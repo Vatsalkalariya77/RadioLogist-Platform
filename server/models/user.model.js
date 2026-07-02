@@ -36,6 +36,12 @@ const userSchema = new mongoose.Schema(
       default: "student",
     },
 
+    status: {
+      type: String,
+      enum: ["active", "blocked", "deleted"],
+      default: "active",
+    },
+
     passwordResetToken: {
       type: String,
       select: false,

@@ -1,6 +1,6 @@
 import type { MouseEvent, ReactNode } from "react";
 import { NavLink } from "react-router-dom";
-import { getInitials } from "../../utils/name";
+import UserAvatar from "../common/UserAvatar";
 
 interface SidebarLink {
   name: string;
@@ -19,6 +19,7 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ userRole, userName, isOpen, setIsOpen, onLogoutClick }: SidebarProps) => {
+  console.log("TRACE 9: Sidebar props name:", userName);
   const handleLogout = () => {
     onLogoutClick();
   };
@@ -249,9 +250,7 @@ const Sidebar = ({ userRole, userName, isOpen, setIsOpen, onLogoutClick }: Sideb
         {/* --- User Role Info & Logout --- */}
         <div className="border-t border-slate-800 p-4">
           <div className="flex items-center gap-3.5 rounded-2xl bg-slate-800/40 border border-slate-800/40 p-3.5 mb-3.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-500/10 text-teal-400 font-extrabold text-sm border border-teal-500/20">
-              {getInitials(userName)}
-            </div>
+            <UserAvatar name={userName} className="text-teal-400 text-sm" />
             <div className="min-w-0 flex-1">
               <h4 className="truncate text-xs font-bold text-slate-100">{userName}</h4>
               <p className="text-[10px] font-bold text-teal-500 tracking-wider uppercase mt-0.5">

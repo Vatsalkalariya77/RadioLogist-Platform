@@ -44,6 +44,7 @@ exports.register = asyncHandler(async (req, res) => {
 exports.login = asyncHandler(async (req, res) => {
   const result = await loginUser(req.body);
   setRefreshTokenCookie(res, result.refreshToken);
+  console.log("TRACE 4: Login API JSON response user name:", result.user ? result.user.name : "null");
 
   res.json({
     status: "success",

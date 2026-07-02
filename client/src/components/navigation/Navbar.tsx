@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { getInitials } from "../../utils/name";
+import UserAvatar from "../common/UserAvatar";
 
 interface NavbarProps {
   userRole: string;
@@ -19,6 +19,7 @@ const Navbar = ({
   onLogoutClick,
  
 }: NavbarProps) => {
+  console.log("TRACE 8: Navbar props name:", userName);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -183,9 +184,7 @@ const Navbar = ({
             }}
             className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50/40 p-1.5 pr-3 hover:bg-slate-50 transition-all cursor-pointer"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-600 text-white font-extrabold text-sm shadow-md shadow-teal-600/10">
-              {getInitials(userName)}
-            </div>
+            <UserAvatar name={userName} />
             <div className="hidden text-left sm:block">
               <p className="text-xs font-bold text-slate-800 leading-none">{userName}</p>
               <p className="text-[9px] font-bold text-slate-400 tracking-wider uppercase mt-1">

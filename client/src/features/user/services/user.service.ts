@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   role: "student" | "admin" | "superadmin";
+  status?: "active" | "blocked";
   createdAt: string;
 }
 
@@ -38,5 +39,27 @@ export const updateUserRole = async (
   role: string
 ): Promise<UserApiResponse<User>> => {
   const response = await api.patch(`/users/${id}`, { role });
+  return response.data;
+};
+
+export const createUser = async (
+  payload: any
+): Promise<UserApiResponse<User>> => {
+  const response = await api.post("/users", payload);
+  return response.data;
+};
+
+export const updateUserStatus = async (
+  id: string,
+  status: string
+): Promise<UserApiResponse<User>> => {
+  const response = await api.patch(`/users/${id}/status`, { status });
+  return response.data;
+};
+
+export const deleteUser = async (
+  id: string
+): Promise<UserApiResponse<{ message: string }>> => {
+  const response = await api.delete(`/users/${id}`);
   return response.data;
 };

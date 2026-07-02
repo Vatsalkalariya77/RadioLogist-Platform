@@ -36,6 +36,10 @@ exports.protect = async (req, res, next) => {
     return next(new AppError("User not found", 404));
   }
 
+  if (user.status === "blocked" || user.status === "deleted") {
+    return next(new AppError("Your account has been blocked. Please contact support.", 403));
+  }
+
   req.user = user;
   next();
 };

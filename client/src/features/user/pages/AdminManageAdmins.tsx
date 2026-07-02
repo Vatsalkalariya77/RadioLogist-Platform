@@ -1,11 +1,40 @@
 import { useEffect, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import PageHeader from "../../../components/common/PageHeader";
 import StatusBadge from "../../../components/common/StatusBadge";
 import CustomSelect from "../../../components/common/CustomSelect";
 import ConfirmDialog from "../../../components/common/ConfirmDialog";
-import { useGetUsers, useUpdateUserRole } from "../hooks/useGetUsers";
-import { getInitials } from "../../../utils/name";
+import {
+  useGetUsers,
+  useUpdateUserRole,
+  useCreateUser,
+  useUpdateUserStatus,
+  useDeleteUser,
+} from "../hooks/useGetUsers";
+import UserAvatar from "../../../components/common/UserAvatar";
 import type { User } from "../services/user.service";
+
+const createUserSchema = z.object({
+  name: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name must be at most 50 characters")
+    .regex(/^[A-Za-z]+(?:[ '-][A-Za-z]+)*$/, "Name may only contain letters, spaces, apostrophes, and hyphens"),
+  email: z.string().email("Please provide a valid email address"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(64, "Password must be at most 64 characters")
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d])/,
+      "Password must include uppercase, lowercase, number, and special character"
+    ),
+  role: z.enum(["student", "admin", "superadmin"]),
+});
+
+type CreateUserFormValues = z.infer<typeof createUserSchema>;
 
 export default function AdminManageAdmins() {
   const [search, setSearch] = useState("");
@@ -40,6 +69,43 @@ export default function AdminManageAdmins() {
   });
 
   const { updateUserRole, isPending: isUpdating } = useUpdateUserRole();
+  const { createUser, isPending: isCreating } = useCreateUser();
+  const { updateUserStatus, isPending: isStatusUpdating } = useUpdateUserStatus();
+  const { deleteUser, isPending: isDeleting } = useDeleteUser();
+
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [statusDialog, setStatusDialog] = useState<{
+    open: boolean;
+    user: User | null;
+    targetStatus: "active" | "blocked" | "";
+  }>({
+    open: false,
+    user: null,
+    targetStatus: "",
+  });
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    user: User | null;
+  }>({
+    open: false,
+    user: null,
+  });
+
+  const {
+    register: registerCreate,
+    handleSubmit: handleSubmitCreate,
+    control: controlCreate,
+    reset: resetCreate,
+    formState: { errors: errorsCreate },
+  } = useForm<CreateUserFormValues>({
+    resolver: zodResolver(createUserSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      role: "admin",
+    },
+  });
 
   const [dialogState, setDialogState] = useState<{
     open: boolean;
@@ -54,6 +120,64 @@ export default function AdminManageAdmins() {
     title: "",
     description: "",
   });
+
+  const onCreateSubmit = async (data: CreateUserFormValues) => {
+    try {
+      await createUser(data);
+      setIsCreateOpen(false);
+      resetCreate();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleStatusClick = (user: User) => {
+    const nextStatus = user.status === "blocked" ? "active" : "blocked";
+    setStatusDialog({
+      open: true,
+      user,
+      targetStatus: nextStatus,
+    });
+  };
+
+  const handleConfirmStatusChange = async () => {
+    if (!statusDialog.user || !statusDialog.targetStatus) return;
+    try {
+      await updateUserStatus({
+        id: statusDialog.user.id,
+        status: statusDialog.targetStatus,
+      });
+    } catch (err) {
+      console.error("Failed to update status:", err);
+    } finally {
+      setStatusDialog({
+        open: false,
+        user: null,
+        targetStatus: "",
+      });
+    }
+  };
+
+  const handleDeleteClick = (user: User) => {
+    setDeleteDialog({
+      open: true,
+      user,
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteDialog.user) return;
+    try {
+      await deleteUser(deleteDialog.user.id);
+    } catch (err) {
+      console.error("Failed to delete user:", err);
+    } finally {
+      setDeleteDialog({
+        open: false,
+        user: null,
+      });
+    }
+  };
 
   const handlePromoteClick = (user: User) => {
     setDialogState({
@@ -115,7 +239,17 @@ export default function AdminManageAdmins() {
       <PageHeader
         title="Manage Admins"
         description="Search for accounts, view registration dates, and manage system permissions."
-      />
+      >
+        <button
+          onClick={() => setIsCreateOpen(true)}
+          className="btn-primary py-2 px-4 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+          </svg>
+          Create Account
+        </button>
+      </PageHeader>
 
       {/* Filter and Search Bar Card */}
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
@@ -238,6 +372,7 @@ export default function AdminManageAdmins() {
                   <th className="px-5 py-3 font-semibold">User Details</th>
                   <th className="px-5 py-3 font-semibold">Email</th>
                   <th className="px-5 py-3 font-semibold">Role Badges</th>
+                  <th className="px-5 py-3 font-semibold">Status</th>
                   <th className="px-5 py-3 font-semibold">Created Date</th>
                   <th className="px-5 py-3 text-right font-semibold">Actions</th>
                 </tr>
@@ -246,7 +381,7 @@ export default function AdminManageAdmins() {
                 {usersList.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="px-5 py-8 text-center font-medium text-slate-400"
                     >
                       No user accounts found.
@@ -274,9 +409,7 @@ export default function AdminManageAdmins() {
                       <tr key={user.id} className="table-row-standard">
                         <td className="px-5 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-500/10 text-teal-600 font-extrabold text-xs border border-teal-500/20 shadow-sm">
-                              {getInitials(user.name)}
-                            </div>
+                            <UserAvatar name={user.name} />
                             <div className="font-semibold text-slate-900 truncate max-w-[150px] sm:max-w-xs">
                               {user.name}
                             </div>
@@ -288,11 +421,16 @@ export default function AdminManageAdmins() {
                         <td className="px-5 py-4">
                           <StatusBadge tone={badgeTone}>{user.role}</StatusBadge>
                         </td>
+                        <td className="px-5 py-4">
+                          <StatusBadge tone={user.status === "blocked" ? "danger" : "success"}>
+                            {user.status || "active"}
+                          </StatusBadge>
+                        </td>
                         <td className="px-5 py-4 text-slate-500">
                           {formattedDate}
                         </td>
                         <td className="px-5 py-4">
-                          <div className="flex justify-end items-center">
+                          <div className="flex justify-end items-center gap-2">
                             {isSelf ? (
                               <span className="text-xs font-semibold text-slate-400 italic bg-slate-100 px-2.5 py-1 rounded-lg">
                                 Self (Active)
@@ -301,21 +439,47 @@ export default function AdminManageAdmins() {
                               <span className="text-xs font-semibold text-slate-400 italic">
                                 System Protected
                               </span>
-                            ) : user.role === "student" ? (
-                              <button
-                                onClick={() => handlePromoteClick(user)}
-                                className="btn-primary py-1.5 px-3.5 inline-flex"
-                              >
-                                Promote to Admin
-                              </button>
-                            ) : user.role === "admin" ? (
-                              <button
-                                onClick={() => handleDemoteClick(user)}
-                                className="btn-outline py-1.5 px-3.5 inline-flex"
-                              >
-                                Demote to Student
-                              </button>
-                            ) : null}
+                            ) : (
+                              <>
+                                {/* Promote/Demote buttons */}
+                                {user.role === "student" && (
+                                  <button
+                                    onClick={() => handlePromoteClick(user)}
+                                    className="btn-primary py-1.5 px-3.5 inline-flex text-xs font-bold"
+                                  >
+                                    Promote to Admin
+                                  </button>
+                                )}
+                                {user.role === "admin" && (
+                                  <button
+                                    onClick={() => handleDemoteClick(user)}
+                                    className="btn-outline py-1.5 px-3.5 inline-flex text-xs font-bold"
+                                  >
+                                    Demote to Student
+                                  </button>
+                                )}
+
+                                {/* Block/Unblock Button */}
+                                <button
+                                  onClick={() => handleStatusClick(user)}
+                                  className={`py-1.5 px-3 rounded-lg text-xs font-bold border transition-colors cursor-pointer ${
+                                    user.status === "blocked"
+                                      ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                                      : "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                                  }`}
+                                >
+                                  {user.status === "blocked" ? "Unblock" : "Block"}
+                                </button>
+
+                                {/* Delete Button */}
+                                <button
+                                  onClick={() => handleDeleteClick(user)}
+                                  className="py-1.5 px-3 rounded-lg text-xs font-bold border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer"
+                                >
+                                  Delete
+                                </button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -351,6 +515,128 @@ export default function AdminManageAdmins() {
         </div>
       )}
 
+      {/* Create Account Modal */}
+      {isCreateOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl p-6 space-y-6 animate-in scale-in duration-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-sm font-extrabold text-slate-800">Create New Account</h3>
+              <button
+                onClick={() => {
+                  setIsCreateOpen(false);
+                  resetCreate();
+                }}
+                className="text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitCreate(onCreateSubmit)} noValidate className="space-y-4">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  placeholder="John Doe"
+                  {...registerCreate("name")}
+                  className="input-standard w-full"
+                />
+                {errorsCreate.name && (
+                  <p className="text-[10px] font-bold text-rose-500 mt-1">
+                    {errorsCreate.name.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  placeholder="name@example.com"
+                  {...registerCreate("email")}
+                  className="input-standard w-full"
+                />
+                {errorsCreate.email && (
+                  <p className="text-[10px] font-bold text-rose-500 mt-1">
+                    {errorsCreate.email.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  {...registerCreate("password")}
+                  className="input-standard w-full"
+                />
+                {errorsCreate.password && (
+                  <p className="text-[10px] font-bold text-rose-500 mt-1">
+                    {errorsCreate.password.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-2">
+                  Role
+                </label>
+                <Controller
+                  name="role"
+                  control={controlCreate}
+                  render={({ field }) => (
+                    <CustomSelect
+                      value={field.value}
+                      onChange={field.onChange}
+                      options={[
+                        { value: "admin", label: "Admin" },
+                      ]}
+                      error={errorsCreate.role?.message}
+                    />
+                  )}
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 border-t border-slate-100 pt-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCreateOpen(false);
+                    resetCreate();
+                  }}
+                  className="btn-outline px-4 py-2 text-xs font-bold cursor-pointer"
+                  disabled={isCreating}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary px-4 py-2 text-xs font-bold flex items-center gap-2 cursor-pointer"
+                  disabled={isCreating}
+                >
+                  {isCreating && (
+                    <svg className="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  )}
+                  <span>Create Account</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Role Change Confirmation Dialog */}
       <ConfirmDialog
         open={dialogState.open}
@@ -368,6 +654,43 @@ export default function AdminManageAdmins() {
             targetRole: "",
             title: "",
             description: "",
+          })
+        }
+      />
+
+      {/* Block/Unblock Confirmation Dialog */}
+      <ConfirmDialog
+        open={statusDialog.open}
+        title={statusDialog.targetStatus === "blocked" ? "Block User" : "Unblock User"}
+        description={`Are you sure you want to ${statusDialog.targetStatus} user ${statusDialog.user?.name} (${statusDialog.user?.email})?`}
+        confirmText={statusDialog.targetStatus === "blocked" ? "Block" : "Unblock"}
+        cancelText="Cancel"
+        variant={statusDialog.targetStatus === "blocked" ? "danger" : "success"}
+        loading={isStatusUpdating}
+        onConfirm={handleConfirmStatusChange}
+        onCancel={() =>
+          setStatusDialog({
+            open: false,
+            user: null,
+            targetStatus: "",
+          })
+        }
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        open={deleteDialog.open}
+        title="Delete User"
+        description={`Are you sure you want to permanently delete user ${deleteDialog.user?.name} (${deleteDialog.user?.email})? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() =>
+          setDeleteDialog({
+            open: false,
+            user: null,
           })
         }
       />

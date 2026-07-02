@@ -12,8 +12,10 @@ export function useLogin() {
   const mutation = useMutation<AuthResponse, Error, LoginPayload>({
     mutationFn: loginUser,
     onSuccess: (data) => {
+      console.log("TRACE 5: useLogin() received response user name:", data.user ? data.user.name : "null");
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      console.log("TRACE 6: localStorage.getItem(\"user\") immediately after login:", localStorage.getItem("user"));
       showToast("success", "Logged in successfully!");
 
       // Role-based redirect

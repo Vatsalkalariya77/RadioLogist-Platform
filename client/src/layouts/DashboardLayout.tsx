@@ -34,6 +34,7 @@ const DashboardLayout = () => {
   try {
     const userString = localStorage.getItem("user");
     user = userString ? JSON.parse(userString) : null;
+    console.log("TRACE 7: DashboardLayout user object name:", user ? user.name : "null");
   } catch {
     user = null;
   }

@@ -149,13 +149,18 @@ const getRefreshJwtConfig = () => {
 
 const getJwtConfig = getAccessJwtConfig;
 
-const serializeUser = (user) => ({
-  id: user._id.toString(),
-  name: user.name,
-  email: user.email,
-  role: user.role,
-  createdAt: user.createdAt,
-});
+const serializeUser = (user) => {
+  const serialized = {
+    id: user._id.toString(),
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    status: user.status || "active",
+    createdAt: user.createdAt,
+  };
+  console.log("TRACE 3: serializeUser output name:", serialized.name);
+  return serialized;
+};
 
 module.exports = {
   normalizeEmail,

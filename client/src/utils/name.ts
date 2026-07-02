@@ -18,8 +18,8 @@ export const getInitials = (name: string): string => {
 
   if (parts.length > 1) {
     const firstInitial = parts[0].charAt(0);
-    const lastInitial = parts[parts.length - 1].charAt(0);
-    return (firstInitial + lastInitial).toUpperCase();
+    const secondInitial = parts[1].charAt(0);
+    return (firstInitial + secondInitial).toUpperCase();
   }
 
   // Single name, use first 2 characters
