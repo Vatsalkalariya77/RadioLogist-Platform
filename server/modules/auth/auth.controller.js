@@ -5,6 +5,9 @@ const {
   logoutUser,
   refreshAccessToken,
   registerUser,
+  forgotPassword,
+  resetPassword,
+  changePassword,
 } = require("./auth.service");
 const asyncHandler = require("../../utils/asyncHandler");
 
@@ -66,5 +69,38 @@ exports.logout = asyncHandler(async (req, res) => {
   res.status(200).json({
     status: "success",
     message: "Logged out successfully",
+  });
+});
+
+// FORGOT PASSWORD
+exports.forgotPassword = asyncHandler(async (req, res) => {
+  const result = await forgotPassword(req.body.email);
+  res.json({
+    status: "success",
+    message: result.message,
+  });
+});
+
+// RESET PASSWORD
+exports.resetPassword = asyncHandler(async (req, res) => {
+  const { token, password } = req.body;
+  const result = await resetPassword(token, password);
+  clearRefreshTokenCookie(res);
+
+  res.json({
+    status: "success",
+    message: result.message,
+  });
+});
+
+// CHANGE PASSWORD
+exports.changePassword = asyncHandler(async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const result = await changePassword(req.user._id, currentPassword, newPassword);
+  clearRefreshTokenCookie(res);
+
+  res.json({
+    status: "success",
+    message: result.message,
   });
 });

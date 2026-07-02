@@ -2,10 +2,32 @@ import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import Navbar from "../components/navigation/Navbar";
 import Sidebar from "../components/navigation/Sidebar";
+import ConfirmDialog from "../components/common/ConfirmDialog";
+import { useToast } from "../context/ToastContext";
+import api from "../services/api";
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
   const navigate = useNavigate();
+  const { showToast } = useToast();
+
+  const handleLogoutConfirm = async () => {
+    setLogoutLoading(true);
+    try {
+      await api.post("/auth/logout");
+    } catch (err) {
+      console.error("Logout API call failed:", err);
+    } finally {
+      setLogoutLoading(false);
+      setLogoutOpen(false);
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      showToast("success", "Logged out successfully.");
+      navigate("/login");
+    }
+  };
 
   let user = null;
 
@@ -63,6 +85,7 @@ const DashboardLayout = () => {
         userName={user.name}
         isOpen={sidebarOpen}
         setIsOpen={setSidebarOpen}
+        onLogoutClick={() => setLogoutOpen(true)}
       />
 
       <div className="flex min-h-screen flex-col lg:pl-72 pt-16">
@@ -71,12 +94,25 @@ const DashboardLayout = () => {
           userName={user.name}
           userEmail={user.email}
           setSidebarOpen={setSidebarOpen}
+          onLogoutClick={() => setLogoutOpen(true)}
         />
 
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <Outlet />
         </main>
       </div>
+
+      <ConfirmDialog
+        open={logoutOpen}
+        title="Confirm Logout"
+        description="Are you sure you want to log out of your account?"
+        confirmText="Log Out"
+        cancelText="Cancel"
+        variant="danger"
+        loading={logoutLoading}
+        onConfirm={handleLogoutConfirm}
+        onCancel={() => setLogoutOpen(false)}
+      />
     </div>
   );
 };

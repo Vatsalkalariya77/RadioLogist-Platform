@@ -1,6 +1,5 @@
 import type { MouseEvent, ReactNode } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import api from "../../services/api";
+import { NavLink } from "react-router-dom";
 import { getInitials } from "../../utils/name";
 
 interface SidebarLink {
@@ -16,18 +15,12 @@ interface SidebarProps {
   isOpen: boolean;
   isCollapsed?: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  onLogoutClick: () => void;
 }
 
-const Sidebar = ({ userRole, userName, isOpen, setIsOpen }: SidebarProps) => {
-  const navigate = useNavigate();
-
+const Sidebar = ({ userRole, userName, isOpen, setIsOpen, onLogoutClick }: SidebarProps) => {
   const handleLogout = () => {
-    api.post("/auth/logout").catch((err) => {
-      console.error("Logout API call failed:", err);
-    });
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
+    onLogoutClick();
   };
 
   const studentLinks: SidebarLink[] = [

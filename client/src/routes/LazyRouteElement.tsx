@@ -20,6 +20,9 @@ const pages = {
   generalDashboard: lazy(
     () => import("../features/dashboard/pages/GeneralDashboard")
   ),
+  forgotPassword: lazy(() => import("../features/auth/pages/ForgotPasswordPage")),
+  resetPassword: lazy(() => import("../features/auth/pages/ResetPasswordPage")),
+  changePassword: lazy(() => import("../features/auth/pages/ChangePasswordPage")),
 };
 
 type PageKey = keyof typeof pages;

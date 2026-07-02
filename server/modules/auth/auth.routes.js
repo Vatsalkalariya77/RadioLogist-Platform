@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { register, login, refresh, logout } = require("./auth.controller");
+const { register, login, refresh, logout, forgotPassword, resetPassword, changePassword } = require("./auth.controller");
 const createAuthRateLimit = require("../../middlewares/authRateLimit.middleware");
 const { protect } = require("../../middlewares/auth.middleware");
 const { serializeUser } = require("../../utils/auth");
@@ -20,6 +20,9 @@ router.post("/register", registerRateLimit, register);
 router.post("/login", loginRateLimit, login);
 router.post("/refresh", refresh);
 router.post("/logout", logout);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
+router.patch("/change-password", protect, changePassword);
 
 router.get("/me", protect, (req, res) => {
   res.json({

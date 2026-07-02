@@ -3,15 +3,18 @@ import { loginUser } from "../services/auth.service";
 import type { AuthResponse, LoginPayload } from "../../../types/auth";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useToast } from "../../../context/ToastContext";
 
 export function useLogin() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const mutation = useMutation<AuthResponse, Error, LoginPayload>({
     mutationFn: loginUser,
     onSuccess: (data) => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      showToast("success", "Logged in successfully!");
 
       // Role-based redirect
       if (data.user.role === "admin" || data.user.role === "superadmin") {

@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -106,6 +107,8 @@ const LoginPage = () => {
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full space-y-10">
+
+
             {errorMessage && (
               <p className="text-center text-red-500 text-xs font-bold -mt-6">
                 {errorMessage}
@@ -170,9 +173,9 @@ const LoginPage = () => {
                   </button>
                 </div>
                 <div className="flex justify-end mt-2">
-                  <button type="button" className="text-[10px] font-bold text-[#41B3B4] hover:opacity-80 transition-opacity cursor-pointer">
+                  <Link to="/forgot-password" className="text-[10px] font-bold text-[#41B3B4] hover:opacity-80 transition-opacity cursor-pointer">
                     Forgot Password?
-                  </button>
+                  </Link>
                 </div>
                 <div className="h-[18px] leading-[18px] overflow-hidden mt-1">
                   {errors.password && (
@@ -187,9 +190,19 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={isPending}
-              className="w-full py-4 bg-[#41B3B4] hover:bg-[#369B9C] text-white rounded-xl font-bold text-xs tracking-widest transition-all shadow-lg active:scale-[0.98] disabled:opacity-70 mt-4 cursor-pointer"
+              className="w-full py-4 bg-[#41B3B4] hover:bg-[#369B9C] text-white rounded-xl font-bold text-xs tracking-widest transition-all shadow-lg active:scale-[0.98] disabled:opacity-70 mt-4 cursor-pointer flex items-center justify-center gap-2"
             >
-              {isPending ? "PROCESSING..." : "SIGN IN"}
+              {isPending ? (
+                <>
+                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                <span>SIGN IN</span>
+              )}
             </button>
           </form>
 

@@ -1,30 +1,29 @@
 import { useMutation } from "@tanstack/react-query";
-import { registerUser } from "../services/auth.service";
-import type { RegisterPayload } from "../../../types/auth";
+import { resetPassword } from "../services/auth.service";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useToast } from "../../../context/ToastContext";
 
-export function useRegister() {
+export function useResetPassword() {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  const mutation = useMutation<any, Error, RegisterPayload>({
-    mutationFn: registerUser,
+  const mutation = useMutation<any, Error, any>({
+    mutationFn: resetPassword,
     onSuccess: () => {
-      showToast("success", "Account created successfully! Please sign in.");
+      showToast("success", "Password reset successful! Please log in.");
       navigate("/login");
     },
     onError: (error) => {
       const message = axios.isAxiosError(error)
         ? error.response?.data?.message || error.message
         : error.message;
-      console.error("Registration failed:", message);
+      console.error("Reset password failed:", message);
     },
   });
 
   return {
-    register: mutation.mutateAsync,
+    resetPassword: mutation.mutateAsync,
     isPending: mutation.isPending,
     error: mutation.error,
   };

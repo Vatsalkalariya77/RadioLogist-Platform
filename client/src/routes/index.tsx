@@ -16,6 +16,14 @@ export const router = createBrowserRouter([
         path: "/register",
         element: <LazyRouteElement page="register" />,
       },
+      {
+        path: "/forgot-password",
+        element: <LazyRouteElement page="forgotPassword" />,
+      },
+      {
+        path: "/reset-password",
+        element: <LazyRouteElement page="resetPassword" />,
+      },
     ],
   },
   {
@@ -99,6 +107,10 @@ export const router = createBrowserRouter([
           {
             index: true,
             element: <LazyRouteElement page="generalDashboard" />,
+          },
+          {
+            path: "change-password",
+            element: <LazyRouteElement page="changePassword" />,
           },
         ],
       },
